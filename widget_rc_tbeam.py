@@ -1,6 +1,7 @@
 from PyQt5 import QtGui,QtWidgets,QtCore
 from PyQt5.QtCore import QThread, Qt, QRect
 from PyQt5.QtGui import QPainter, QPen, QColor
+from language_manager import lang_manager
 
 
 class RcTBeamWidget(QtWidgets.QWidget):
@@ -21,7 +22,15 @@ class RcTBeamWidget(QtWidgets.QWidget):
         self.bard=[bard1*factor,bard2*factor]
         self.stirrup_d=stirrup_d*factor
         self.BarNum=BarNum
-        if self.BeamCondition=='內梁' :
+        # Check beam condition for all languages
+        is_interior_beam = (BeamCondition in [
+            lang_manager.tr("beam.interior_beam"),  # Current language
+            "內梁",  # Chinese
+            "คานใน",  # Thai  
+            "Interior Beam"  # English
+        ])
+        
+        if is_interior_beam:
             self.x_offset=(self.be-self.B)/2
         else :
             self.x_offset=self.be-self.B
@@ -54,19 +63,27 @@ class RcTBeamWidget(QtWidgets.QWidget):
         if self.drawornot =='yes' :
             #Draw 斷面
             self.qpainter.setBrush(QColor(230,230,230))
-            self.qpainter.drawRect(QRect(0+self.x_offset, 0, self.B,self.D))
-            self.qpainter.drawRect(QRect(0, 0, self.x_offset,self.hf))
-            if self.BeamCondition=='內梁' :
-                self.qpainter.drawRect(QRect(self.B+self.x_offset, 0, self.x_offset,self.hf))
+            self.qpainter.drawRect(QRect(int(0+self.x_offset), 0, int(self.B), int(self.D)))
+            self.qpainter.drawRect(QRect(0, 0, int(self.x_offset), int(self.hf)))
+            # Check beam condition for all languages
+            is_interior_beam = (self.BeamCondition in [
+                lang_manager.tr("beam.interior_beam"),  # Current language
+                "內梁",  # Chinese
+                "คานใน",  # Thai  
+                "Interior Beam"  # English
+            ])
+            
+            if is_interior_beam:
+                self.qpainter.drawRect(QRect(int(self.B+self.x_offset), 0, int(self.x_offset), int(self.hf)))
             # Draw 剪力筋
             qpen = QPen(Qt.red, 1.5, Qt.SolidLine)
             self.qpainter.setPen(qpen)
-            self.qpainter.drawRoundedRect(self.str_start[0],self.str_start[1],self.str_height,self.str_width,self.arcd/2,self.arcd/2) 
-            self.qpainter.drawArc(self.str_start[0],self.str_start[1],self.arcd,self.arcd,45*16,180*16)
-            self.qpainter.drawLine(self.cuvre_start[0],self.cuvre_start[1],self.cuvre_start[0]+self.cuvre_length/2**0.5
-                                  ,self.cuvre_start[1]+self.cuvre_length/2**0.5) 
-            self.qpainter.drawLine(self.cuvre_start[0]-self.arcd/2**0.5,self.cuvre_start[1]+self.arcd/2**0.5,
-                                   self.cuvre_start[0]+self.cuvre_length/2**0.5-self.arcd/2**0.5,self.cuvre_start[1]+self.cuvre_length/2**0.5+self.arcd/2**0.5) 
+            self.qpainter.drawRoundedRect(int(self.str_start[0]),int(self.str_start[1]),int(self.str_height),int(self.str_width),int(self.arcd/2),int(self.arcd/2)) 
+            self.qpainter.drawArc(int(self.str_start[0]),int(self.str_start[1]),int(self.arcd),int(self.arcd),45*16,180*16)
+            self.qpainter.drawLine(int(self.cuvre_start[0]),int(self.cuvre_start[1]),int(self.cuvre_start[0]+self.cuvre_length/2**0.5)
+                                  ,int(self.cuvre_start[1]+self.cuvre_length/2**0.5)) 
+            self.qpainter.drawLine(int(self.cuvre_start[0]-self.arcd/2**0.5),int(self.cuvre_start[1]+self.arcd/2**0.5),
+                                   int(self.cuvre_start[0]+self.cuvre_length/2**0.5-self.arcd/2**0.5),int(self.cuvre_start[1]+self.cuvre_length/2**0.5+self.arcd/2**0.5)) 
             # Draw 鋼筋
             qpen = QPen(Qt.black, 1.5, Qt.SolidLine)
             self.qpainter.setPen(qpen)
@@ -74,14 +91,14 @@ class RcTBeamWidget(QtWidgets.QWidget):
             for i in range(2) :
                 for j in range(self.BarNum[i]) :
                     if j< self.BarAllowabelNumPerRow[i] :
-                        self.qpainter.drawEllipse(self.xstart+j*self.db_h[i],self.ystart[i],self.bard[i],self.bard[i])
+                        self.qpainter.drawEllipse(int(self.xstart+j*self.db_h[i]),int(self.ystart[i]),int(self.bard[i]),int(self.bard[i]))
                     else :
                         if (j-self.BarAllowabelNumPerRow[i])%2 == 0 :
-                            self.qpainter.drawEllipse(self.xstart+0.5*(j-self.BarAllowabelNumPerRow[i])*self.db_h[i]
-                                                      ,self.ystart[i]+self.cleardb_v[i],self.bard[i],self.bard[i])
+                            self.qpainter.drawEllipse(int(self.xstart+0.5*(j-self.BarAllowabelNumPerRow[i])*self.db_h[i])
+                                                      ,int(self.ystart[i]+self.cleardb_v[i]),int(self.bard[i]),int(self.bard[i]))
                         else  :
-                            self.qpainter.drawEllipse(self.B+2*self.x_offset-self.xstart-self.bard[i]-0.5*(j-self.BarAllowabelNumPerRow[i]-1)*self.db_h[i]
-                                                      ,self.ystart[i]+self.cleardb_v[i],self.bard[i],self.bard[i])
+                            self.qpainter.drawEllipse(int(self.B+2*self.x_offset-self.xstart-self.bard[i]-0.5*(j-self.BarAllowabelNumPerRow[i]-1)*self.db_h[i])
+                                                      ,int(self.ystart[i]+self.cleardb_v[i]),int(self.bard[i]),int(self.bard[i]))
             
             
 

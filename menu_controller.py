@@ -10,6 +10,7 @@ from ui_rc_columncal import Ui_RcColumnCal
 from rc_columncal_base import column_cal_button_clicked
 from beam_function import bar_allowable_num_clicked
 from  dataframe_model import  DataFrameModel
+from language_manager import lang_manager
 
 class MenuController(QtWidgets.QMainWindow):
   # signal=QtCore.pyqtSignal(list)
@@ -29,6 +30,29 @@ class MenuController(QtWidgets.QMainWindow):
       self.ui.RC_TbeamCal.clicked.connect(self.rc_tbeam_cal_clicked)
       self.ui.RC_BeamDsgn.clicked.connect(self.rc_beam_dsgn_clicked)
       self.ui.RC_ColumnCal.clicked.connect(self.rc_column_cal_clicked)
+      self.ui.language_combo.currentIndexChanged.connect(self.language_changed)
+      
+      # Set initial language from saved preference
+      self.set_initial_language()
+  
+  def set_initial_language(self):
+      """Set the language combo to match the saved language preference"""
+      current_lang = lang_manager.get_language()
+      
+      # Find and set the correct index in the combo box
+      for i in range(self.ui.language_combo.count()):
+          if self.ui.language_combo.itemData(i) == current_lang:
+              self.ui.language_combo.setCurrentIndex(i)
+              break
+      
+      # Update the UI with the selected language
+      self.ui.retranslateUi(self)
+  
+  def language_changed(self):
+      current_data = self.ui.language_combo.currentData()
+      if current_data:
+          lang_manager.set_language(current_data)
+          self.ui.retranslateUi(self)
 
   def rc_recbeam_cal_clicked(self):
     self.hide()

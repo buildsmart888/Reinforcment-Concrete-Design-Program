@@ -11,6 +11,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from widget_rc_beamdsgn import RcBeamDsgnWidget
 import icons_rc
+from language_manager import lang_manager
+from simple_ui_helper import simple_ui_helper
 
 
 class Ui_RcBeamDsgn(object):
@@ -1322,45 +1324,47 @@ class Ui_RcBeamDsgn(object):
         RCBeamDsgn.setStatusBar(self.statusbar)
 
         self.retranslateUi(RCBeamDsgn)
+        simple_ui_helper.add_placeholders(RCBeamDsgn)
+        simple_ui_helper.add_window_titles(RCBeamDsgn)
         QtCore.QMetaObject.connectSlotsByName(RCBeamDsgn)
 
     def retranslateUi(self, RCBeamDsgn):
         _translate = QtCore.QCoreApplication.translate
-        RCBeamDsgn.setWindowTitle(_translate("RCBeamDsgn", "MainWindow"))
-        self.label_width.setText(_translate("RCBeamDsgn", "    梁寬 B (cm)    :"))
-        self.label_depth.setText(_translate("RCBeamDsgn", "   梁深 D (cm)     :"))
-        self.label_fc.setText(_translate("RCBeamDsgn", "   F\'c (kgf/cm2)    :"))
-        self.label_fy.setText(_translate("RCBeamDsgn", "   Fy (kgf/cm2)    :"))
-        self.title_Mu_left.setText(_translate("RCBeamDsgn", "梁左端"))
-        self.title_Mu_rght.setText(_translate("RCBeamDsgn", "梁右端"))
-        self.title_Mu_mid.setText(_translate("RCBeamDsgn", "梁中央"))
-        self.label_hf.setText(_translate("RCBeamDsgn", "   版厚 hf (cm)    :"))
-        self.label_L.setText(_translate("RCBeamDsgn", "  梁跨距 L(cm)    :"))
-        self.label_Sn.setText(_translate("RCBeamDsgn", "  梁間距 Sn (cm) :"))
-        self.beam_condition.setItemText(0, _translate("RCBeamDsgn", "內梁"))
-        self.beam_condition.setItemText(1, _translate("RCBeamDsgn", "邊梁"))
-        self.label_Mu_left_minus.setText(_translate("RCBeamDsgn", "   Mu- (tf-m) "))
-        self.label_Vg.setText(_translate("RCBeamDsgn", "     Vg (tf)     "))
-        self.label_Tu.setText(_translate("RCBeamDsgn", "    Tu (tf-m)  "))
-        self.label_Mu_left_plus.setText(_translate("RCBeamDsgn", "   Mu+ (tf-m) "))
-        self.label_Mu_mid_minus.setText(_translate("RCBeamDsgn", "   Mu- (tf-m) "))
-        self.label_mid_Vg.setText(_translate("RCBeamDsgn", "     Vg (tf)     "))
-        self.label_mid_Tu.setText(_translate("RCBeamDsgn", "    Tu (tf-m)  "))
-        self.label_Mu_mid_plus.setText(_translate("RCBeamDsgn", "   Mu+ (tf-m) "))
-        self.label_Mu_rght_minus.setText(_translate("RCBeamDsgn", "   Mu- (tf-m) "))
-        self.label_rght_Vg.setText(_translate("RCBeamDsgn", "     Vg (tf)     "))
-        self.label_rght_Tu.setText(_translate("RCBeamDsgn", "    Tu (tf-m)  "))
-        self.label_Mu_rght_plus.setText(_translate("RCBeamDsgn", "   Mu+ (tf-m) "))
-        self.dsgnbutton.setText(_translate("RCBeamDsgn", "Design"))
-        self.closeButton1.setText(_translate("RCBeamDsgn", "Back"))
+        RCBeamDsgn.setWindowTitle(lang_manager.tr("app_title", "MainWindow"))
+        self.label_width.setText(lang_manager.tr("beam.width", "Beam Width B (cm)"))
+        self.label_depth.setText(lang_manager.tr("beam.depth", "Beam Depth D (cm)"))
+        self.label_fc.setText(lang_manager.tr("beam.concrete_strength", "F'c (kgf/cm²)"))
+        self.label_fy.setText(lang_manager.tr("beam.steel_strength", "Fy (kgf/cm²)"))
+        self.title_Mu_left.setText(lang_manager.tr("beam.left_end", "Left End"))
+        self.title_Mu_rght.setText(lang_manager.tr("beam.right_end", "Right End"))
+        self.title_Mu_mid.setText(lang_manager.tr("beam.mid_span", "Mid Span"))
+        self.label_hf.setText(lang_manager.tr("beam.slab_thickness", "Slab Thickness hf (cm)"))
+        self.label_L.setText(lang_manager.tr("beam.span", "Beam Span L (cm)"))
+        self.label_Sn.setText(lang_manager.tr("beam.spacing", "Beam Spacing Sn (cm)"))
+        self.beam_condition.setItemText(0, lang_manager.tr("beam.interior_beam", "Interior Beam"))
+        self.beam_condition.setItemText(1, lang_manager.tr("beam.edge_beam", "Edge Beam"))
+        self.label_Mu_left_minus.setText(lang_manager.tr("beam.negative_moment", "Negative Moment Mu- (tf-m)"))
+        self.label_Vg.setText(lang_manager.tr("beam.shear_force", "Shear Force Vg (tf)"))
+        self.label_Tu.setText(lang_manager.tr("beam.torsion_force", "Torsion Tu (tf-m)"))
+        self.label_Mu_left_plus.setText(lang_manager.tr("beam.positive_moment", "Positive Moment Mu+ (tf-m)"))
+        self.label_Mu_mid_minus.setText(lang_manager.tr("beam.negative_moment", "Negative Moment Mu- (tf-m)"))
+        self.label_mid_Vg.setText(lang_manager.tr("beam.shear_force", "Shear Force Vg (tf)"))
+        self.label_mid_Tu.setText(lang_manager.tr("beam.torsion_force", "Torsion Tu (tf-m)"))
+        self.label_Mu_mid_plus.setText(lang_manager.tr("beam.positive_moment", "Positive Moment Mu+ (tf-m)"))
+        self.label_Mu_rght_minus.setText(lang_manager.tr("beam.negative_moment", "Negative Moment Mu- (tf-m)"))
+        self.label_rght_Vg.setText(lang_manager.tr("beam.shear_force", "Shear Force Vg (tf)"))
+        self.label_rght_Tu.setText(lang_manager.tr("beam.torsion_force", "Torsion Tu (tf-m)"))
+        self.label_Mu_rght_plus.setText(lang_manager.tr("beam.positive_moment", "Positive Moment Mu+ (tf-m)"))
+        self.dsgnbutton.setText(lang_manager.tr("common.design", "Design"))
+        self.closeButton1.setText(lang_manager.tr("common.back", "Back"))
         self.textBrowser.setHtml(_translate("RCBeamDsgn", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Times New Roman\'; font-size:9pt; font-weight:72; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'PMingLiU\'; font-weight:400;\">hiiiiii</span></p></body></html>"))
-        self.constructability.setText(_translate("RCBeamDsgn", "考慮施工性"))
-        self.ConsiderCompressionBar.setText(_translate("RCBeamDsgn", "雙筋設計"))
-        self.ConsiderTbeam.setText(_translate("RCBeamDsgn", "考慮樓版貢獻(T型梁)"))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'PMingLiU\'; font-weight:400;\"></span></p></body></html>"))
+        self.constructability.setText(lang_manager.tr("beam.constructability", "Consider Constructability"))
+        self.ConsiderCompressionBar.setText(lang_manager.tr("beam.compression_reinforcement", "Double Reinforcement Design"))
+        self.ConsiderTbeam.setText(lang_manager.tr("beam.consider_slab", "Consider Slab Contribution (T-Beam)"))
 
 
 if __name__ == "__main__":

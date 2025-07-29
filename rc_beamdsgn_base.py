@@ -2,6 +2,7 @@ import math
 import numpy as np
 from rc_recbeamcal_base import math2, cal_recbeam_Mn,cal_phi,cal_effectived_beta
 from rc_tbeamcal_base import cal_effective_width,math2
+from language_manager import lang_manager
 
 def beam_dsgn_button_clicked(data):
     try :
@@ -82,7 +83,7 @@ def beam_dsgn_button_clicked(data):
         arrange=[]
         for i in range(6) :
             dsgn_barnum.append(math.ceil(As_final[i]/barinfo[choose_bar][1]))
-            arrange.append('雙排') if dsgn_barnum[i]>barinfo[choose_bar][2] else arrange.append('單排')
+            arrange.append(lang_manager.tr('results.double_row')) if dsgn_barnum[i]>barinfo[choose_bar][2] else arrange.append(lang_manager.tr('results.single_row'))
         
         #檢核彎矩強度與最外鋼筋拉應變限制
         [phiMn_all,et_all,bar_ratio]=CheckMratio(barinfo,choose_bar,dsgn_barnum,arrange,B,D,fc,fy)
@@ -121,14 +122,26 @@ def beam_dsgn_button_clicked(data):
         
 
         #結果輸出
-        location=['左端負彎矩','左端正彎矩','中央負彎矩','中央正彎矩','右端負彎矩','右端正彎矩']
-        location2=['左端剪力 :','中央剪力 :','右端剪力 :']
+        location=[
+            lang_manager.tr('results.left_negative_moment'),
+            lang_manager.tr('results.left_positive_moment'),
+            lang_manager.tr('results.mid_negative_moment'),
+            lang_manager.tr('results.mid_positive_moment'),
+            lang_manager.tr('results.right_negative_moment'),
+            lang_manager.tr('results.right_positive_moment')
+        ]
+        location2=[
+            lang_manager.tr('results.left_end_shear') + ' :',
+            lang_manager.tr('results.mid_shear') + ' :',
+            lang_manager.tr('results.right_end_shear') + ' :'
+        ]
         result1=''
-        result2='塑鉸區剪力需求　Vu= '+str(round(Ve,2))+' tonf\n'+'非塑鉸區剪力需求　Vu= '+str(round(Vu_nhinge,2))+' tonf\n'
+        result2=(lang_manager.tr('results.plastic_hinge_shear_demand') + ' Vu= ' + str(round(Ve,2)) + ' ' + lang_manager.tr('results.ton_force') + '\n' +
+                lang_manager.tr('results.non_plastic_hinge_shear_demand') + ' Vu= ' + str(round(Vu_nhinge,2)) + ' ' + lang_manager.tr('results.ton_force') + '\n')
         for i in range(6) :
-            result1=(result1+str(i+1)+'. '+location[i]+':  撓曲鋼筋設計 '+str(dsgn_barnum[i])+'-'+str(choose_bar)+' ('
-                    +str(arrange[i])+'),  '+'\u03d5 Mn= '+str(round(phiMn_all[i],2))+'  tf-m, '
-                    +'\u03b5 t= '+str(round(et_all[i],5)) +', 鋼筋比 \u03c1= '+str(round(bar_ratio[i],3))+'\n')
+            result1=(result1+str(i+1)+'. '+location[i]+':  ' + lang_manager.tr('results.flexural_steel_design') + ' ' + str(dsgn_barnum[i])+'-'+str(choose_bar)+' ('
+                    +str(arrange[i])+'),  '+'\u03d5 Mn= '+str(round(phiMn_all[i],2))+'  ' + lang_manager.tr('results.ton_meter') + ', '
+                    +'\u03b5 t= '+str(round(et_all[i],5)) +', ' + lang_manager.tr('results.steel_ratio') + ' \u03c1= '+str(round(bar_ratio[i],3))+'\n')
         x=[0,1,0]
         for i in range(len(x)) :
             result2=(result2+location2[i]+stir_result[x[i]]+'\n')
@@ -140,8 +153,14 @@ def beam_dsgn_button_clicked(data):
         data.rcbeamdsgnwidget.rcbeamdsgndraw_info(data,choose_bar,dsgn_barnum,s_dsgn_all,choose_stirrup,choose_stirrup_num,barinfo)
      
 
-    except :
-        data.textBrowser.setText('Please input the parameters')
+    except Exception as e:
+        try:
+            data.textBrowser.setText(lang_manager.tr('results.please_input_parameters'))
+        except:
+            data.textBrowser.setText('Please input the parameters')
+        print(f"Error in beam_dsgn_button_clicked: {e}")
+        import traceback
+        traceback.print_exc()
 
 def dsgn_beam_As(B,d,dd,be,hf,fc,fy,As1,Mu,phiMn_tcs,shape) :
     #拉控斷面配筋法
@@ -254,9 +273,9 @@ def Stirrup_Dsgn(Vu,fc,fy,B,d,barinfo) :
     Av_s_max=4*Vc*1000/(fy*d) #cm
     if Av_s_req>Av_s_max :
         Av_s_req=Av_s_max
-        stir_result='剪力筋強度需求超過4Vc，請放大梁寬'
+        stir_result=lang_manager.tr('results.shear_exceed_4vc')
     else :
-        stir_result='剪力筋強度需求滿足限制，無須調整梁寬'
+        stir_result=lang_manager.tr('results.shear_within_limit')
     ########Design Strategy############
     stirrup_num=2
     if Av_s_req<=0.071 : # #3@200mm 單箍
@@ -291,7 +310,7 @@ def cal_Mpr(barinfo,choose_bar,dsgn_barnum,arrange,B,D,fc,fy) :
         barA=barinfo[choose_bar][1]
         As=dsgn_barnum[i]*barA
         BarNumCal=[dsgn_barnum[i],0]
-        arrange_use=[arrange[i],'單排']
+        arrange_use=[arrange[i],lang_manager.tr('results.single_row')]
         BarNumMax_PerRow=[barinfo[choose_bar][2],barinfo[choose_bar][2]]
         [d,dt,dd,beta]=cal_effectived_beta(arrange_use,D,4,bard,bard,fc,barinfo['#4'][0],
                                             BarNumCal,BarNumMax_PerRow)   

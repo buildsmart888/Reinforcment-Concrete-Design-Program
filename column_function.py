@@ -199,8 +199,8 @@ def get_pmmratio(interaction_diagram,Pu,Mu):
         if angle2>=angle :
             points=[interaction_diagram.loc[i-1,['phiMn','phiPn']],interaction_diagram.loc[i,['phiMn','phiPn']]]
             break
-    x=np.linspace(points[0][0],points[1][0],20)
-    y=np.linspace(points[0][1],points[1][1],20)
+    x=np.linspace(points[0].iloc[0],points[1].iloc[0],20)
+    y=np.linspace(points[0].iloc[1],points[1].iloc[1],20)
     # m_total=[ get_theta(x[i],y[i])-angle for i in range(len(x))]
     n=90
     for i in range(len(x)) :

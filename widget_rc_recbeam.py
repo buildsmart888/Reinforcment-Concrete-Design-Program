@@ -49,17 +49,17 @@ class RcRecBeamWidget(QtWidgets.QWidget):
         if self.drawornot =='yes' :
             #Draw 斷面
             self.qpainter.setBrush(QColor(230,230,230))
-            self.qpainter.drawRect(QRect(0, 0, self.B,self.D))
+            self.qpainter.drawRect(QRect(0, 0, int(self.B), int(self.D)))
 
             # Draw 剪力筋
             qpen = QPen(Qt.red, 1.5, Qt.SolidLine)
             self.qpainter.setPen(qpen)
-            self.qpainter.drawRoundedRect(self.str_start,self.str_start,self.str_height,self.str_width,self.arcd/2,self.arcd/2) 
-            self.qpainter.drawArc(self.str_start,self.str_start,self.arcd,self.arcd,45*16,180*16)
-            self.qpainter.drawLine(self.cuvre_start[0],self.cuvre_start[1],self.cuvre_start[0]+self.cuvre_length/2**0.5
-                                  ,self.cuvre_start[0]+self.cuvre_length/2**0.5) 
-            self.qpainter.drawLine(self.cuvre_start[0]-self.arcd/2**0.5,self.cuvre_start[1]+self.arcd/2**0.5,
-                                   self.cuvre_start[0]+self.cuvre_length/2**0.5-self.arcd/2**0.5,self.cuvre_start[0]+self.cuvre_length/2**0.5+self.arcd/2**0.5) 
+            self.qpainter.drawRoundedRect(int(self.str_start),int(self.str_start),int(self.str_height),int(self.str_width),int(self.arcd/2),int(self.arcd/2)) 
+            self.qpainter.drawArc(int(self.str_start),int(self.str_start),int(self.arcd),int(self.arcd),45*16,180*16)
+            self.qpainter.drawLine(int(self.cuvre_start[0]),int(self.cuvre_start[1]),int(self.cuvre_start[0]+self.cuvre_length/2**0.5)
+                                  ,int(self.cuvre_start[0]+self.cuvre_length/2**0.5)) 
+            self.qpainter.drawLine(int(self.cuvre_start[0]-self.arcd/2**0.5),int(self.cuvre_start[1]+self.arcd/2**0.5),
+                                   int(self.cuvre_start[0]+self.cuvre_length/2**0.5-self.arcd/2**0.5),int(self.cuvre_start[0]+self.cuvre_length/2**0.5+self.arcd/2**0.5)) 
             # Draw 鋼筋
             qpen = QPen(Qt.black, 1.5, Qt.SolidLine)
             self.qpainter.setPen(qpen)
@@ -67,14 +67,14 @@ class RcRecBeamWidget(QtWidgets.QWidget):
             for i in range(2) :
                 for j in range(self.BarNum[i]) :
                     if j< self.BarAllowabelNumPerRow[i] :
-                        self.qpainter.drawEllipse(self.xstart+j*self.db_h[i],self.ystart[i],self.bard[i],self.bard[i])
+                        self.qpainter.drawEllipse(int(self.xstart+j*self.db_h[i]),int(self.ystart[i]),int(self.bard[i]),int(self.bard[i]))
                     else :
                         if (j-self.BarAllowabelNumPerRow[i])%2 == 0 :
-                            self.qpainter.drawEllipse(self.xstart+0.5*(j-self.BarAllowabelNumPerRow[i])*self.db_h[i]
-                                                      ,self.ystart[i]+self.cleardb_v[i],self.bard[i],self.bard[i])
+                            self.qpainter.drawEllipse(int(self.xstart+0.5*(j-self.BarAllowabelNumPerRow[i])*self.db_h[i])
+                                                      ,int(self.ystart[i]+self.cleardb_v[i]),int(self.bard[i]),int(self.bard[i]))
                         else  :
-                            self.qpainter.drawEllipse(self.B-self.xstart-self.bard[i]-0.5*(j-self.BarAllowabelNumPerRow[i]-1)*self.db_h[i]
-                                                      ,self.ystart[i]+self.cleardb_v[i],self.bard[i],self.bard[i])
+                            self.qpainter.drawEllipse(int(self.B-self.xstart-self.bard[i]-0.5*(j-self.BarAllowabelNumPerRow[i]-1)*self.db_h[i])
+                                                      ,int(self.ystart[i]+self.cleardb_v[i]),int(self.bard[i]),int(self.bard[i]))
             
             
             

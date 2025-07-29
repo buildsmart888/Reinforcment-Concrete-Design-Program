@@ -1,4 +1,5 @@
 import math
+from language_manager import lang_manager
 
 def get_EandG_vaule(fc):
     Ec=12000*math.sqrt(fc)/1000 #tf/cm2
@@ -21,12 +22,27 @@ def rebar_info(keyin):
     return rebar_d, Ab
 
 def stirrup_info(keyin):
-    chart={'雙肢箍': 2, '三肢箍': 3,'四肢箍': 4}
-    return chart.get(keyin,'none')
+    chart={
+        # Chinese
+        '雙肢箍': 2, 
+        '三肢箍': 3,
+        '四肢箍': 4,
+        # English
+        'Two-leg Stirrup': 2,
+        'Three-leg Stirrup': 3, 
+        'Four-leg Stirrup': 4,
+        # Thai
+        'เหล็กปลอกสองขา': 2,
+        'เหล็กปลอกสามขา': 3,
+        'เหล็กปลอกสี่ขา': 4
+    }
+    result = chart.get(keyin, 2)  # Default to 2 if not found
+    return result
 
 def get_clear_cover(keyin):
     chart={'Beam': 4, 'Column': 4,'Slab': 2} #cm
-    return chart.get(keyin,'none')
+    result = chart.get(keyin, 4)  # Default to 4 if not found
+    return result
 
 
 def cal_bar_allowable_num(B,PrtctT,rebar_d,stirrup_d,cnstrctblty,type) :
@@ -51,7 +67,7 @@ def bar_allowable_num_clicked(data,type):
             RebarAllowabelNumPerRow,cleardb_h=cal_bar_allowable_num(B,PrtctT,rebar_d,1.588,cnstrctblty,type)
             BarAllowNum.append(str(RebarAllowabelNumPerRow))
         for i in range(len(barchart)):
-            data.barallowtext.append(barchart[i]+'單排容許量 :'+BarAllowNum[i]+'根')
+            data.barallowtext.append(barchart[i]+lang_manager.tr('results.single_row_capacity')+' :'+BarAllowNum[i]+lang_manager.tr('results.bars'))
     except :
         data.barallowtext.setText('Please input the section width')
 
@@ -98,7 +114,7 @@ def get_section_info(B,D,fc,fy,bar1,bar2,tensilebar_num,compressionbar_num,stirr
 
 def cal_effectived_beta(arrange,D,PrtctT,bard1,bard2,fc,stirrup_d,BarNum,BarAllowNumPerRow) :
     #計算有效深度
-    if arrange[0] == '單排' :
+    if arrange[0] == lang_manager.tr('results.single_row') or BarNum[0] == 0:
         d=D-PrtctT-stirrup_d-bard1/2
         dt=d
     else: #僅考慮兩排的情況
@@ -110,7 +126,7 @@ def cal_effectived_beta(arrange,D,PrtctT,bard1,bard2,fc,stirrup_d,BarNum,BarAllo
         for i in range(row-1) :
             d+=BarAllowNumPerRow[0]/BarNum[0]*(d1-i*delta)
         dt=d1
-    if arrange[1] == '單排' :
+    if arrange[1] == lang_manager.tr('results.single_row') or BarNum[1] == 0:
         dd=PrtctT+stirrup_d+bard2/2
     else:
         dd1=PrtctT+stirrup_d+bard2/2
@@ -132,15 +148,15 @@ def cal_phi(c,d,dt):
     et=0.003/c*(dt-c)
     phi=min(0.9,0.65+0.25/0.003*(et-0.002)) if et>=0.002 else 0.65
     if et>=0.005 :
-        result1='拉力控制斷面'
+        result1=lang_manager.tr('results.tension_control')
     elif et>=0.002 :
-        result1='過渡斷面'
+        result1=lang_manager.tr('results.transition')
     else:
-        result1='壓力控制斷面'
+        result1=lang_manager.tr('results.compression_control')
     if et>=0.004 :
-        result2='最外拉筋應變滿足規範 \u03b5 \nt > 0.004 (OK)'
+        result2=lang_manager.tr('results.strain_satisfies')
     else:
-        result2='最外拉筋應變不滿足規範\u03b5 \nt < 0.004 (NG)'
+        result2=lang_manager.tr('results.strain_not_satisfies')
     return es,et,result1,result2,phi
 
 def cal_shear_strngth(stirrup_d,stirrup_num,stirrup_span,fc,fy,B,d) :
@@ -170,9 +186,9 @@ def cal_recbeam_Mn(dd,fc,beta,B,d,fy,Ass,As) :
         Cc=0.85*fc*beta*B*c
         Cs=Ass*(fy-0.85*fc)
         es=0.003/c*(d-c)
-        result0='壓筋降伏且拉筋降伏' if es > 0.002 else '壓筋降伏但拉筋不降伏'
+        result0=lang_manager.tr('results.compression_yielding_tension_yielding') if es > 0.002 else lang_manager.tr('results.compression_yielding_tension_not_yielding')
     else: #壓筋不降伏
-        result0='壓筋不降伏'
+        result0=lang_manager.tr('results.compression_not_yielding')
         c=max(math2(0.85*fc*beta*B,(6120-0.85*fc)*Ass-As*fy,-6120*dd*Ass))
         a=beta*c
         fs=6120/c*(c-dd)
@@ -186,7 +202,15 @@ def cal_recbeam_Mn(dd,fc,beta,B,d,fy,Ass,As) :
 #///////////////////////For T型梁////////////////////////
 #計算有效翼寬
 def cal_effective_width(BeamCondition,B,Sn,hf,length) :
-    if BeamCondition=='內梁' :
+    # Check beam condition for all languages
+    is_interior_beam = (BeamCondition in [
+        lang_manager.tr("beam.interior_beam"),  # Current language
+        "內梁",  # Chinese
+        "คานใน",  # Thai  
+        "Interior Beam"  # English
+    ])
+    
+    if is_interior_beam:
         be=min(length/4,B+Sn,B+16*hf)
     else :
         be=min(B+length/12,B+Sn/2,B+6*hf)
@@ -212,9 +236,9 @@ def cal_tbeam_Mn(dd,beta,hf,fc,fy,B,d,be,Ass,As) :
             Cs=Ass*(fy-0.85*fc)
             es=0.003/c*(d-c)
             if es > 0.002 :
-                result0='壓力區面積為T形\n壓筋降伏且拉筋降伏'
+                result0=lang_manager.tr('results.compression_area_t_shape') + '\n' + lang_manager.tr('results.compression_yielding_tension_yielding')
             else:
-                result0='壓力區面積為T形\n壓筋降伏但拉筋不降伏'
+                result0=lang_manager.tr('results.compression_area_t_shape') + '\n' + lang_manager.tr('results.compression_yielding_tension_not_yielding')
         else : #矩形
             a=(As*fy-Ass*(fy-0.85*fc))/(0.85*fc*be)
             c=a/beta
@@ -222,12 +246,12 @@ def cal_tbeam_Mn(dd,beta,hf,fc,fy,B,d,be,Ass,As) :
             Cs=Ass*(fy-0.85*fc)
             es=0.003/c*(d-c)
             if es > 0.002 :
-                result0='壓力區面積為矩形\n壓筋降伏且拉筋降伏'
+                result0=lang_manager.tr('results.compression_area_rectangular') + '\n' + lang_manager.tr('results.compression_yielding_tension_yielding')
             else:
-                result0='壓力區面積為矩形\n壓筋降伏但拉筋不降伏'
+                result0=lang_manager.tr('results.compression_area_rectangular') + '\n' + lang_manager.tr('results.compression_yielding_tension_not_yielding')
     else: #壓筋不降伏
         if As > Ascritical : #T型 :
-            result0='壓力區面積為T形\n壓筋不降伏'
+            result0=lang_manager.tr('results.compression_area_t_shape') + '\n' + lang_manager.tr('results.compression_not_yielding')
             c=max(math2(0.85*fc*beta*B,(6120-0.85*fc)*Ass-As*fy+0.85*fc*(be-B)*hf,-6120*dd*Ass))
             a=beta*c
             fs=6120/c*(c-dd)
@@ -235,7 +259,7 @@ def cal_tbeam_Mn(dd,beta,hf,fc,fy,B,d,be,Ass,As) :
             Cc=0.85*fc*Ac
             Cs=Ass*(fs-0.85*fc)
         else : #矩形
-            result0='壓力區面積為矩形\n壓筋不降伏'
+            result0=lang_manager.tr('results.compression_area_rectangular') + '\n' + lang_manager.tr('results.compression_not_yielding')
             c=max(math2(0.85*fc*beta*be,(6120-0.85*fc)*Ass-As*fy,-6120*dd*Ass))
             a=beta*c
             fs=6120/c*(c-dd)

@@ -1,6 +1,8 @@
 import math
 import numpy as np
+import math
 from beam_function import *
+from language_manager import lang_manager
 
 def tbeam_cal_button_clicked(data):
     try :
@@ -54,10 +56,10 @@ def tbeam_cal_button_clicked(data):
         info11='Cc= '+str(round(Cc/1000,2))+'  tonf'
         info12='Cs= '+str(round(Cs/1000,2))+'  tonf'
         result1='\u03d5 Mn= '+str(round(phi,3))+'x'+str(round(Mn,2))+'='+str(round(phi*Mn,2))+'  tf-m'
-        result2='M ratio= '+str(round(Mux/phi/Mn,3))
+        result2=lang_manager.tr('results.moment_ratio') + '= '+str(round(Mux/phi/Mn,3))
         result3='\u03d5 Vn= '+str(round(phiVn,2)) +'  tf'
-        result4='V ratio= '+str(round(Vuy/phiVn,3))
-        result5='最大剪力筋間距= '+str(s_max) +'  mm'
+        result4=lang_manager.tr('results.shear_ratio') + '= '+str(round(Vuy/phiVn,3))
+        result5=lang_manager.tr('results.max_stirrup_spacing') + '= '+str(s_max) +'  mm'
         
         data.textBrowser.setText((result0+'\n'+info1+'\n'+info2+'\n'+info3+'\n'+info4+'\n'+info5+'\n'+info6+'\n'+
                                      info7+'\n'+info8+'\n'+info9+'\n'+info10+'\n'+result2+'\n'+info11+'\n'+info12+'\n'
@@ -67,8 +69,14 @@ def tbeam_cal_button_clicked(data):
         BarAllowabelNumPerRow=[RebarAllowabelNumPerRow1,RebarAllowabelNumPerRow1]
         BarNum=[tensilebar_num,compressionbar_num]
         data.rctbeamwidget.rctbeamdraw_info(data,BarNum,BarAllowabelNumPerRow,db_stirrup,bard1,bard2,be,BeamCondition)
-    except :
-        data.textBrowser.setText('Please input the parameters')
+    except Exception as e:
+        try:
+            data.textBrowser.setText(lang_manager.tr('results.please_input_parameters'))
+        except:
+            data.textBrowser.setText('Please input the parameters')
+        print(f"Error in tbeam_cal_button_clicked: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 

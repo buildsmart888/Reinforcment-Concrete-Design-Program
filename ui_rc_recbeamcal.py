@@ -11,6 +11,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from widget_rc_recbeam import RcRecBeamWidget
 import icons_rc
+from language_manager import lang_manager
+from simple_ui_helper import simple_ui_helper
 
 class Ui_RcRecBeamCal(object):
     def setupUi(self, RCRecbeamCal):
@@ -704,60 +706,62 @@ class Ui_RcRecBeamCal(object):
         RCRecbeamCal.setStatusBar(self.statusbar)
 
         self.retranslateUi(RCRecbeamCal)
+        simple_ui_helper.add_placeholders(RCRecbeamCal)
+        simple_ui_helper.add_window_titles(RCRecbeamCal)
         QtCore.QMetaObject.connectSlotsByName(RCRecbeamCal)
 
     def retranslateUi(self, RCRecbeamCal):
         _translate = QtCore.QCoreApplication.translate
-        RCRecbeamCal.setWindowTitle(_translate("RCRecbeamCal", "MainWindow"))
-        self.label_width.setText(_translate("RCRecbeamCal", "    梁寬 B (cm)     :"))
-        self.label_depth.setText(_translate("RCRecbeamCal", "    梁深 D (cm)     :"))
-        self.label_fc.setText(_translate("RCRecbeamCal", "    F\'c (kgf/cm2)    :"))
-        self.label_fy.setText(_translate("RCRecbeamCal", "    Fy (kgf/cm2)    :"))
-        self.label_As.setText(_translate("RCRecbeamCal", "            As             :"))
-        self.label_Ass.setText(_translate("RCRecbeamCal", "            A\'s            :"))
-        self.barnum1.setPlaceholderText(_translate("RCRecbeamCal", "At least 1"))
-        self.label_stirrup.setText(_translate("RCRecbeamCal", "           箍筋          :"))
-        self.stirrup_size.setItemText(0, _translate("RCRecbeamCal", "#3(D10)"))
-        self.stirrup_size.setItemText(1, _translate("RCRecbeamCal", "#4(D13)"))
-        self.stirrup_size.setItemText(2, _translate("RCRecbeamCal", "#5(D16)"))
-        self.label_stirrup_span.setText(_translate("RCRecbeamCal", "   箍筋間距 (cm) :"))
+        RCRecbeamCal.setWindowTitle(lang_manager.tr("app_title", "MainWindow"))
+        self.label_width.setText(lang_manager.tr("beam.width", "Beam Width B (cm)"))
+        self.label_depth.setText(lang_manager.tr("beam.depth", "Beam Depth D (cm)"))
+        self.label_fc.setText(lang_manager.tr("beam.concrete_strength", "F'c (kgf/cm²)"))
+        self.label_fy.setText(lang_manager.tr("beam.steel_strength", "Fy (kgf/cm²)"))
+        self.label_As.setText(lang_manager.tr("beam.reinforcement", "Reinforcement As"))
+        self.label_Ass.setText(lang_manager.tr("beam.compression_steel", "Compression Steel A's"))
+        self.barnum1.setPlaceholderText(lang_manager.tr("placeholders.at_least_1", "At least 1"))
+        self.label_stirrup.setText(lang_manager.tr("beam.stirrup", "Stirrup"))
+        self.stirrup_size.setItemText(0, lang_manager.tr("rebar_sizes.d10", "#3(D10)"))
+        self.stirrup_size.setItemText(1, lang_manager.tr("rebar_sizes.d13", "#4(D13)"))
+        self.stirrup_size.setItemText(2, lang_manager.tr("rebar_sizes.d16", "#5(D16)"))
+        self.label_stirrup_span.setText(lang_manager.tr("beam.stirrup_spacing", "Stirrup Spacing (cm)"))
         self.textBrowser.setHtml(_translate("RCRecbeamCal", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Times New Roman\'; font-size:9pt; font-weight:72; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'PMingLiU\'; font-weight:400;\">hiiiiii</span></p></body></html>"))
-        self.bar1.setItemText(0, _translate("RCRecbeamCal", "#3(D10)"))
-        self.bar1.setItemText(1, _translate("RCRecbeamCal", "#4(D13)"))
-        self.bar1.setItemText(2, _translate("RCRecbeamCal", "#5(D16)"))
-        self.bar1.setItemText(3, _translate("RCRecbeamCal", "#6(D19)"))
-        self.bar1.setItemText(4, _translate("RCRecbeamCal", "#7(D22)"))
-        self.bar1.setItemText(5, _translate("RCRecbeamCal", "#8(D25)"))
-        self.bar1.setItemText(6, _translate("RCRecbeamCal", "#9(D29)"))
-        self.bar1.setItemText(7, _translate("RCRecbeamCal", "#10(D32)"))
-        self.bar1.setItemText(8, _translate("RCRecbeamCal", "#11(D36)"))
-        self.bar2.setItemText(0, _translate("RCRecbeamCal", "#3(D10)"))
-        self.bar2.setItemText(1, _translate("RCRecbeamCal", "#4(D13)"))
-        self.bar2.setItemText(2, _translate("RCRecbeamCal", "#5(D16)"))
-        self.bar2.setItemText(3, _translate("RCRecbeamCal", "#6(D19)"))
-        self.bar2.setItemText(4, _translate("RCRecbeamCal", "#7(D22)"))
-        self.bar2.setItemText(5, _translate("RCRecbeamCal", "#8(D25)"))
-        self.bar2.setItemText(6, _translate("RCRecbeamCal", "#9(D29)"))
-        self.bar2.setItemText(7, _translate("RCRecbeamCal", "#10(D32)"))
-        self.bar2.setItemText(8, _translate("RCRecbeamCal", "#11(D36)"))
-        self.stirrup_num.setItemText(0, _translate("RCRecbeamCal", "雙肢箍"))
-        self.stirrup_num.setItemText(1, _translate("RCRecbeamCal", "三肢箍"))
-        self.stirrup_num.setItemText(2, _translate("RCRecbeamCal", "四肢箍"))
-        self.calbutton.setText(_translate("RCRecbeamCal", "Calculate"))
-        self.closeButton1.setText(_translate("RCRecbeamCal", "Back"))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'PMingLiU\'; font-weight:400;\"></span></p></body></html>"))
+        self.bar1.setItemText(0, lang_manager.tr("rebar_sizes.d10", "#3(D10)"))
+        self.bar1.setItemText(1, lang_manager.tr("rebar_sizes.d13", "#4(D13)"))
+        self.bar1.setItemText(2, lang_manager.tr("rebar_sizes.d16", "#5(D16)"))
+        self.bar1.setItemText(3, lang_manager.tr("rebar_sizes.d19", "#6(D19)"))
+        self.bar1.setItemText(4, lang_manager.tr("rebar_sizes.d22", "#7(D22)"))
+        self.bar1.setItemText(5, lang_manager.tr("rebar_sizes.d25", "#8(D25)"))
+        self.bar1.setItemText(6, lang_manager.tr("rebar_sizes.d29", "#9(D29)"))
+        self.bar1.setItemText(7, lang_manager.tr("rebar_sizes.d32", "#10(D32)"))
+        self.bar1.setItemText(8, lang_manager.tr("rebar_sizes.d36", "#11(D36)"))
+        self.bar2.setItemText(0, lang_manager.tr("rebar_sizes.d10", "#3(D10)"))
+        self.bar2.setItemText(1, lang_manager.tr("rebar_sizes.d13", "#4(D13)"))
+        self.bar2.setItemText(2, lang_manager.tr("rebar_sizes.d16", "#5(D16)"))
+        self.bar2.setItemText(3, lang_manager.tr("rebar_sizes.d19", "#6(D19)"))
+        self.bar2.setItemText(4, lang_manager.tr("rebar_sizes.d22", "#7(D22)"))
+        self.bar2.setItemText(5, lang_manager.tr("rebar_sizes.d25", "#8(D25)"))
+        self.bar2.setItemText(6, lang_manager.tr("rebar_sizes.d29", "#9(D29)"))
+        self.bar2.setItemText(7, lang_manager.tr("rebar_sizes.d32", "#10(D32)"))
+        self.bar2.setItemText(8, lang_manager.tr("rebar_sizes.d36", "#11(D36)"))
+        self.stirrup_num.setItemText(0, lang_manager.tr("stirrup.two_leg", "Two-leg Stirrup"))
+        self.stirrup_num.setItemText(1, lang_manager.tr("stirrup.three_leg", "Three-leg Stirrup"))
+        self.stirrup_num.setItemText(2, lang_manager.tr("stirrup.four_leg", "Four-leg Stirrup"))
+        self.calbutton.setText(lang_manager.tr("common.calculate", "Calculate"))
+        self.closeButton1.setText(lang_manager.tr("common.back", "Back"))
         self.barallowtext.setHtml(_translate("RCRecbeamCal", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Times New Roman\'; font-size:9pt; font-weight:72; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
-        self.label_Mux.setText(_translate("RCRecbeamCal", "   Mu (tf-m) "))
-        self.label_Vuy.setText(_translate("RCRecbeamCal", "     Vu (tf)    "))
-        self.label_Tu.setText(_translate("RCRecbeamCal", "    Tu (tf-m)  "))
-        self.constructability.setText(_translate("RCRecbeamCal", "考慮施工性"))
+        self.label_Mux.setText(lang_manager.tr("beam.moment", "Moment Mu (tf-m)"))
+        self.label_Vuy.setText(lang_manager.tr("beam.shear", "Shear Vu (tf)"))
+        self.label_Tu.setText(lang_manager.tr("beam.torsion", "Torsion Tu (tf-m)"))
+        self.constructability.setText(lang_manager.tr("beam.constructability", "Consider Constructability"))
 
 
 

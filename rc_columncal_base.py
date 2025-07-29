@@ -6,6 +6,7 @@ from column_function import get_column_section_info,get_rebar_df,get_theta,get_a
 import numpy as np
 import pandas as pd
 from  dataframe_model import  DataFrameModel
+from language_manager import lang_manager
 
 def column_cal_button_clicked(data):
     try :
@@ -69,13 +70,13 @@ def column_cal_button_clicked(data):
 
         # #結果輸出
         info1='Ast= '+str(round(Ast,2))+'  cm^2'
-        info2='鋼筋比= '+str(round(Ast/(B*D)*100,3))+' %'
+        info2=lang_manager.tr('results.steel_ratio') + '= '+str(round(Ast/(B*D)*100,3))+' %'
         info3='Pno= '+str(round(Pno,1))+'  tonf'
         info4='Pnmax= '+str(round(Pnmax,1))+'  tonf'
         info5='\u03d5 Pno= '+str(round(0.65*Pno,1))+'  tonf'
         info6='\u03d5 Pnmax= '+str(round(0.65*Pnmax,1))+'  tonf'
-        info7='理論 \u03B8 = '+str(round(theta,1))+'  °'
-        info8='假設 \u03B1 = '+str(round(alpha,1))+'  °'
+        info7=lang_manager.tr('results.theoretical_theta') + ' \u03B8 = '+str(round(theta,1))+'  °'
+        info8=lang_manager.tr('results.assumed_alpha') + ' \u03B1 = '+str(round(alpha,1))+'  °'
         result4='PMM ratio= '+str(pmm_ratio)
         result5='\u03d5 Vn= '+str(round(phiVny,2)) +'  tf'
         result6='\u03d5 Vn= '+str(round(phiVnx,2)) +'  tf'
@@ -86,6 +87,12 @@ def column_cal_button_clicked(data):
         data.rccolumnwidget.rccolumndraw_info(data,Nx,Ny,db_stirrup,db_rebar1,db_rebar2,PrtctT)
         data.signal.emit([interaction_diagram, mm_diagram, capacity_point,Mux,Muy,Mu,Pu])
 
-    except :
-        data.textBrowser.setText('Please input the parameters')
+    except Exception as e:
+        try:
+            data.textBrowser.setText(lang_manager.tr('results.please_input_parameters'))
+        except:
+            data.textBrowser.setText('Please input the parameters')
+        print(f"Error in column_cal_button_clicked: {e}")
+        import traceback
+        traceback.print_exc()
 

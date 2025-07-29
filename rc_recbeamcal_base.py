@@ -1,5 +1,6 @@
 import math
 from beam_function import *
+from language_manager import lang_manager
 
 def recbeam_cal_button_clicked(data):
     try :
@@ -47,10 +48,10 @@ def recbeam_cal_button_clicked(data):
         info10='Cc= '+str(round(Cc/1000,2))+'  tonf'
         info11='Cs= '+str(round(Cs/1000,2))+'  tonf'
         result3='\u03d5 Mn= '+str(round(phi,3))+'x'+str(round(Mn,2))+'= '+str(round(phi*Mn,2))+'  tf-m'
-        result4='M ratio= '+str(round(Mux/phi/Mn,3))
+        result4=lang_manager.tr('results.moment_ratio') + '= '+str(round(Mux/phi/Mn,3))
         result5='\u03d5 Vn= '+str(round(phiVn,2)) +'  tf'
-        result6='V ratio= '+str(round(Vuy/phiVn,3))
-        result7='最大剪力筋間距= '+str(s_max) +'  mm'
+        result6=lang_manager.tr('results.shear_ratio') + '= '+str(round(Vuy/phiVn,3))
+        result7=lang_manager.tr('results.max_stirrup_spacing') + '= '+str(s_max) +'  mm'
         data.textBrowser.setText((result0+'\n'+result1+'\n'+info1+'\n'+info2+'\n'+info3+'\n'+info4+'\n'+info5+'\n'+info6+'\n'+
                                     info7+'\n'+info8+'\n'+info9+'\n'+result2+'\n'+info10+'\n'+info11+'\n'+result3+'\n'+result4+'\n'
                                     +result5+'\n'+result6+'\n'+result7+'\n' ))
@@ -58,8 +59,16 @@ def recbeam_cal_button_clicked(data):
         BarAllowabelNumPerRow=[RebarAllowabelNumPerRow1,RebarAllowabelNumPerRow1]
         BarNum=[tensilebar_num,compressionbar_num]
         data.rcrecbeamwidget.rcrecbeamdraw_info(data,BarNum,BarAllowabelNumPerRow,db_stirrup,bard1,bard2)
-    except :
-        data.textBrowser.setText('Please input the parameters')
+    except Exception as e:
+        try:
+            data.textBrowser.setText(lang_manager.tr('results.please_input_parameters'))
+        except:
+            # Fallback if translation fails
+            data.textBrowser.setText('Please input the parameters')
+        # Print error for debugging
+        print(f"Error in recbeam_cal_button_clicked: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 

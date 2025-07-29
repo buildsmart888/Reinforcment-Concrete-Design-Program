@@ -12,6 +12,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from widget_rc_column import RcColumnWidget
 from widget_rc_pmm import RcPmmWidget
 import icons_rc
+from language_manager import lang_manager
+from simple_ui_helper import simple_ui_helper
 
 
 class Ui_RcColumnCal(object):
@@ -744,60 +746,62 @@ class Ui_RcColumnCal(object):
         RCColumnCal.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(RCColumnCal)
+        simple_ui_helper.add_placeholders(RCColumnCal)
+        simple_ui_helper.add_window_titles(RCColumnCal)
         QtCore.QMetaObject.connectSlotsByName(RCColumnCal)
 
     def retranslateUi(self, RCColumnCal):
         _translate = QtCore.QCoreApplication.translate
-        RCColumnCal.setWindowTitle(_translate("RCColumnCal", "MainWindow"))
-        self.label_width.setText(_translate("RCColumnCal", "    柱寬 B (cm)    :"))
-        self.label_depth.setText(_translate("RCColumnCal", "    柱深 D (cm)    :"))
-        self.label_fc.setText(_translate("RCColumnCal", "   F\'c (kgf/cm2)    :"))
-        self.label_fy.setText(_translate("RCColumnCal", "   Fy (kgf/cm2)    :"))
-        self.label_hf.setText(_translate("RCColumnCal", "      鋼筋數 Nx    :"))
-        self.label_L.setText(_translate("RCColumnCal", "      鋼筋數 Ny    :"))
-        self.label_stirrup.setText(_translate("RCColumnCal", "           箍筋          :"))
-        self.stirrup_size.setItemText(0, _translate("RCColumnCal", "#3(D10)"))
-        self.stirrup_size.setItemText(1, _translate("RCColumnCal", "#4(D13)"))
-        self.stirrup_size.setItemText(2, _translate("RCColumnCal", "#5(D16)"))
-        self.label_stirrup_span.setText(_translate("RCColumnCal", "   箍筋間距 (cm) :"))
-        self.bar1.setItemText(0, _translate("RCColumnCal", "#3(D10)"))
-        self.bar1.setItemText(1, _translate("RCColumnCal", "#4(D13)"))
-        self.bar1.setItemText(2, _translate("RCColumnCal", "#5(D16)"))
-        self.bar1.setItemText(3, _translate("RCColumnCal", "#6(D19)"))
-        self.bar1.setItemText(4, _translate("RCColumnCal", "#7(D22)"))
-        self.bar1.setItemText(5, _translate("RCColumnCal", "#8(D25)"))
-        self.bar1.setItemText(6, _translate("RCColumnCal", "#9(D29)"))
-        self.bar1.setItemText(7, _translate("RCColumnCal", "#10(D32)"))
-        self.bar1.setItemText(8, _translate("RCColumnCal", "#11(D36)"))
-        self.bar2.setItemText(0, _translate("RCColumnCal", "#3(D10)"))
-        self.bar2.setItemText(1, _translate("RCColumnCal", "#4(D13)"))
-        self.bar2.setItemText(2, _translate("RCColumnCal", "#5(D16)"))
-        self.bar2.setItemText(3, _translate("RCColumnCal", "#6(D19)"))
-        self.bar2.setItemText(4, _translate("RCColumnCal", "#7(D22)"))
-        self.bar2.setItemText(5, _translate("RCColumnCal", "#8(D25)"))
-        self.bar2.setItemText(6, _translate("RCColumnCal", "#9(D29)"))
-        self.bar2.setItemText(7, _translate("RCColumnCal", "#10(D32)"))
-        self.bar2.setItemText(8, _translate("RCColumnCal", "#11(D36)"))
-        self.stirrup_num.setItemText(0, _translate("RCColumnCal", "雙肢箍"))
-        self.stirrup_num.setItemText(1, _translate("RCColumnCal", "三肢箍"))
-        self.stirrup_num.setItemText(2, _translate("RCColumnCal", "四肢箍"))
-        self.calbutton.setText(_translate("RCColumnCal", "Calculate"))
-        self.closeButton1.setText(_translate("RCColumnCal", "Back"))
+        RCColumnCal.setWindowTitle(lang_manager.tr("app_title", "MainWindow"))
+        self.label_width.setText(lang_manager.tr("column.width", "Column Width B (cm)"))
+        self.label_depth.setText(lang_manager.tr("column.depth", "Column Depth D (cm)"))
+        self.label_fc.setText(lang_manager.tr("column.concrete_strength", "F'c (kgf/cm²)"))
+        self.label_fy.setText(lang_manager.tr("column.steel_strength", "Fy (kgf/cm²)"))
+        self.label_hf.setText(lang_manager.tr("column.bars_x", "Number of Bars Nx"))
+        self.label_L.setText(lang_manager.tr("column.bars_y", "Number of Bars Ny"))
+        self.label_stirrup.setText(lang_manager.tr("column.stirrup", "Stirrup"))
+        self.stirrup_size.setItemText(0, lang_manager.tr("rebar_sizes.d10", "#3(D10)"))
+        self.stirrup_size.setItemText(1, lang_manager.tr("rebar_sizes.d13", "#4(D13)"))
+        self.stirrup_size.setItemText(2, lang_manager.tr("rebar_sizes.d16", "#5(D16)"))
+        self.label_stirrup_span.setText(lang_manager.tr("column.stirrup_spacing", "Stirrup Spacing (cm)"))
+        self.bar1.setItemText(0, lang_manager.tr("rebar_sizes.d10", "#3(D10)"))
+        self.bar1.setItemText(1, lang_manager.tr("rebar_sizes.d13", "#4(D13)"))
+        self.bar1.setItemText(2, lang_manager.tr("rebar_sizes.d16", "#5(D16)"))
+        self.bar1.setItemText(3, lang_manager.tr("rebar_sizes.d19", "#6(D19)"))
+        self.bar1.setItemText(4, lang_manager.tr("rebar_sizes.d22", "#7(D22)"))
+        self.bar1.setItemText(5, lang_manager.tr("rebar_sizes.d25", "#8(D25)"))
+        self.bar1.setItemText(6, lang_manager.tr("rebar_sizes.d29", "#9(D29)"))
+        self.bar1.setItemText(7, lang_manager.tr("rebar_sizes.d32", "#10(D32)"))
+        self.bar1.setItemText(8, lang_manager.tr("rebar_sizes.d36", "#11(D36)"))
+        self.bar2.setItemText(0, lang_manager.tr("rebar_sizes.d10", "#3(D10)"))
+        self.bar2.setItemText(1, lang_manager.tr("rebar_sizes.d13", "#4(D13)"))
+        self.bar2.setItemText(2, lang_manager.tr("rebar_sizes.d16", "#5(D16)"))
+        self.bar2.setItemText(3, lang_manager.tr("rebar_sizes.d19", "#6(D19)"))
+        self.bar2.setItemText(4, lang_manager.tr("rebar_sizes.d22", "#7(D22)"))
+        self.bar2.setItemText(5, lang_manager.tr("rebar_sizes.d25", "#8(D25)"))
+        self.bar2.setItemText(6, lang_manager.tr("rebar_sizes.d29", "#9(D29)"))
+        self.bar2.setItemText(7, lang_manager.tr("rebar_sizes.d32", "#10(D32)"))
+        self.bar2.setItemText(8, lang_manager.tr("rebar_sizes.d36", "#11(D36)"))
+        self.stirrup_num.setItemText(0, lang_manager.tr("stirrup.two_leg", "Two-leg Stirrup"))
+        self.stirrup_num.setItemText(1, lang_manager.tr("stirrup.three_leg", "Three-leg Stirrup"))
+        self.stirrup_num.setItemText(2, lang_manager.tr("stirrup.four_leg", "Four-leg Stirrup"))
+        self.calbutton.setText(lang_manager.tr("common.calculate", "Calculate"))
+        self.closeButton1.setText(lang_manager.tr("common.back", "Back"))
         self.barallowtext.setHtml(_translate("RCColumnCal", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Times New Roman\'; font-size:9pt; font-weight:72; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
-        self.label_Mux.setText(_translate("RCColumnCal", "   Mux (tf-m)  "))
-        self.label_Muy.setText(_translate("RCColumnCal", "   Muy (tf-m)  "))
-        self.label_Pu.setText(_translate("RCColumnCal", "        Pu (tf)     "))
-        self.constructability.setText(_translate("RCColumnCal", "考慮施工性"))
+        self.label_Mux.setText(lang_manager.tr("column.moment_x", "Moment Mux (tf-m)"))
+        self.label_Muy.setText(lang_manager.tr("column.moment_y", "Moment Muy (tf-m)"))
+        self.label_Pu.setText(lang_manager.tr("column.axial_force", "Axial Force Pu (tf)"))
+        self.constructability.setText(lang_manager.tr("column.constructability", "Consider Constructability"))
         self.textBrowser.setHtml(_translate("RCColumnCal", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Times New Roman\'; font-size:9pt; font-weight:72; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'PMingLiU\'; font-weight:400;\">hiiiiii</span></p></body></html>"))
-        self.PicChangeButton.setText(_translate("RCColumnCal", "PMM / MM"))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'PMingLiU\'; font-weight:400;\"></span></p></body></html>"))
+        self.PicChangeButton.setText(lang_manager.tr("common.pmm_mm", "PMM / MM"))
 
 
 if __name__ == "__main__":

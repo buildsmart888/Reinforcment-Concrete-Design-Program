@@ -41,6 +41,10 @@ class RcBeamDsgnWidget(QtWidgets.QWidget):
         qpen = QPen(Qt.black, 2.5, Qt.SolidLine)
         self.qpainter.setPen(qpen)
         if self.drawornot=='yes' :
+            # Check if all required variables are initialized
+            if not hasattr(self, 'choose_stirrup_num') or not hasattr(self, 'choose_stirrup') or not hasattr(self, 's_dsgn_all'):
+                self.qpainter.end()
+                return
             #畫梁與柱
             p1x=self.wsize/2-self.L/2-self.colw/2
             p2x=self.wsize/2-self.L/2+self.colw/2
@@ -48,29 +52,29 @@ class RcBeamDsgnWidget(QtWidgets.QWidget):
             p1y=self.hsize/2-self.colh-self.D/2
             p2y=self.hsize/2-self.D/2
             self.qpainter.setBrush(QColor(230,230,230))
-            self.qpainter.drawRect(QRect(p2x,p2y, self.L-self.colw,self.D))
-            self.qpainter.drawRect(QRect(p1x,p1y, self.colw,2*self.colh+self.D))
-            self.qpainter.drawRect(QRect(p3x,p1y, self.colw,2*self.colh+self.D))
+            self.qpainter.drawRect(QRect(int(p2x), int(p2y), int(self.L-self.colw), int(self.D)))
+            self.qpainter.drawRect(QRect(int(p1x), int(p1y), int(self.colw), int(2*self.colh+self.D)))
+            self.qpainter.drawRect(QRect(int(p3x), int(p1y), int(self.colw), int(2*self.colh+self.D)))
             qpen = QPen(QColor(230,230,230), 2, Qt.SolidLine)
             self.qpainter.setPen(qpen)
             self.qpainter.setBrush(QColor(57,66,83))
-            self.qpainter.drawLine(p2x,p2y,p2x,p2y+self.D)
-            self.qpainter.drawLine(p3x,p2y,p3x,p2y+self.D)
+            self.qpainter.drawLine(int(p2x),int(p2y),int(p2x),int(p2y+self.D))
+            self.qpainter.drawLine(int(p3x),int(p2y),int(p3x),int(p2y+self.D))
 
             #畫鋼筋
             qpen = QPen(Qt.black, 3, Qt.SolidLine)
             self.qpainter.setPen(qpen)
-            self.qpainter.drawLine(p2x-self.colw/2,p2y+7*self.factor,p3x+self.colw/2,p2y+7*self.factor)
-            self.qpainter.drawLine(p2x-self.colw/2,p2y+self.D-10*self.factor,p3x+self.colw/2,p2y+self.D-7*self.factor)
+            self.qpainter.drawLine(int(p2x-self.colw/2),int(p2y+7*self.factor),int(p3x+self.colw/2),int(p2y+7*self.factor))
+            self.qpainter.drawLine(int(p2x-self.colw/2),int(p2y+self.D-10*self.factor),int(p3x+self.colw/2),int(p2y+self.D-7*self.factor))
             #畫標線
             qpen = QPen(Qt.red, 1, Qt.SolidLine)
             self.qpainter.setPen(qpen)
-            self.qpainter.drawLine(p2x+0.05*self.L,p2y+7*self.factor,p2x+0.05*self.L,p2y-self.colh/2)
-            self.qpainter.drawLine(p2x+0.05*self.L,p2y+self.D-7*self.factor,p2x+0.05*self.L,p2y+self.D+self.colh/2)
-            self.qpainter.drawLine(p3x-0.05*self.L,p2y+7*self.factor,p3x-0.05*self.L,p2y-self.colh/2)
-            self.qpainter.drawLine(p3x-0.05*self.L,p2y+self.D-7*self.factor,p3x-0.05*self.L,p2y+self.D+self.colh/2)
-            self.qpainter.drawLine(self.wsize/2,p2y+7*self.factor,self.wsize/2,p2y-self.colh/2)
-            self.qpainter.drawLine(self.wsize/2,p2y+self.D-7*self.factor,self.wsize/2,p2y+self.D+self.colh/2)
+            self.qpainter.drawLine(int(p2x+0.05*self.L),int(p2y+7*self.factor),int(p2x+0.05*self.L),int(p2y-self.colh/2))
+            self.qpainter.drawLine(int(p2x+0.05*self.L),int(p2y+self.D-7*self.factor),int(p2x+0.05*self.L),int(p2y+self.D+self.colh/2))
+            self.qpainter.drawLine(int(p3x-0.05*self.L),int(p2y+7*self.factor),int(p3x-0.05*self.L),int(p2y-self.colh/2))
+            self.qpainter.drawLine(int(p3x-0.05*self.L),int(p2y+self.D-7*self.factor),int(p3x-0.05*self.L),int(p2y+self.D+self.colh/2))
+            self.qpainter.drawLine(int(self.wsize/2),int(p2y+7*self.factor),int(self.wsize/2),int(p2y-self.colh/2))
+            self.qpainter.drawLine(int(self.wsize/2),int(p2y+self.D-7*self.factor),int(self.wsize/2),int(p2y+self.D+self.colh/2))
         
             #標示鋼筋
             inputx=[p2x+0.05*self.L,self.wsize/2-50,p3x-0.05*self.L-100,]
@@ -84,10 +88,10 @@ class RcBeamDsgnWidget(QtWidgets.QWidget):
             maxnumperrow=self.barinfo[self.choose_bar][2]
             for i in range(6) :
                 if self.dsgn_barnum[i]<=maxnumperrow :
-                    self.qpainter.drawText(inputx[xnum[i]],inputy[ynum[i]],100,20,Align[xnum[i]],str(self.dsgn_barnum[i])+' - '+self.choose_bar)
+                    self.qpainter.drawText(int(inputx[xnum[i]]),int(inputy[ynum[i]]),100,20,Align[xnum[i]],str(self.dsgn_barnum[i])+' - '+self.choose_bar)
                 else :
                     double_layer=[str(maxnumperrow),str(self.dsgn_barnum[i]-maxnumperrow)]
-                    self.qpainter.drawText(inputx[xnum[i]],inputy[ynum[i]]+adjusty[ynum[i]],100,30,Align[xnum[i]],double_layer[ynum[i]]+' - '+self.choose_bar+'\n'
+                    self.qpainter.drawText(int(inputx[xnum[i]]),int(inputy[ynum[i]]+adjusty[ynum[i]]),100,30,Align[xnum[i]],double_layer[ynum[i]]+' - '+self.choose_bar+'\n'
                                                                                          +double_layer[1-ynum[i]]+' - '+self.choose_bar)
             # self.qpainter.drawText(p2x+0.05*self.L,p2y-self.colh,100,50,Qt.AlignLeft,str(self.dsgn_barnum[0])+' - '+self.choose_bar)
             # self.qpainter.drawText(p2x+0.05*self.L,p2y+self.D+self.colh/2,100,50,Qt.AlignLeft,str(self.dsgn_barnum[1])+' - '+self.choose_bar )
@@ -96,9 +100,9 @@ class RcBeamDsgnWidget(QtWidgets.QWidget):
             # self.qpainter.drawText(p3x-0.05*self.L-100,p2y-self.colh,100,50,Qt.AlignRight,str(self.dsgn_barnum[4])+' - '+self.choose_bar )
             # self.qpainter.drawText(p3x-0.05*self.L-100,p2y+self.D+self.colh/2,100,50,Qt.AlignRight,str(self.dsgn_barnum[5])+' - '+self.choose_bar )
             #標註剪力鋼筋
-            self.qpainter.drawText(p2x+0.05*self.L,p2y+self.D/2-5,100,10,Qt.AlignLeft, str(self.choose_stirrup_num[0])+' - '+self.choose_stirrup[0]+' @'+str(self.s_dsgn_all[0]))
-            self.qpainter.drawText(self.wsize/2-50,p2y+self.D/2-5,100,10,Qt.AlignCenter,str(self.choose_stirrup_num[1])+' - '+self.choose_stirrup[1]+' @'+str(self.s_dsgn_all[1]))
-            self.qpainter.drawText(p3x-0.05*self.L-100,p2y+self.D/2-5,100,10,Qt.AlignRight,str(self.choose_stirrup_num[0])+' - '+self.choose_stirrup[0]+' @'+str(self.s_dsgn_all[0]))            
+            self.qpainter.drawText(int(p2x+0.05*self.L),int(p2y+self.D/2-5),100,10,Qt.AlignLeft, str(self.choose_stirrup_num[0])+' - '+str(self.choose_stirrup[0])+' @'+str(self.s_dsgn_all[0]))
+            self.qpainter.drawText(int(self.wsize/2-50),int(p2y+self.D/2-5),100,10,Qt.AlignCenter,str(self.choose_stirrup_num[1])+' - '+str(self.choose_stirrup[1])+' @'+str(self.s_dsgn_all[1]))
+            self.qpainter.drawText(int(p3x-0.05*self.L-100),int(p2y+self.D/2-5),100,10,Qt.AlignRight,str(self.choose_stirrup_num[0])+' - '+str(self.choose_stirrup[0])+' @'+str(self.s_dsgn_all[0]))            
 
         self.qpainter.end()
         

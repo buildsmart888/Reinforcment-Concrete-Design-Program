@@ -47,26 +47,26 @@ class RcColumnWidget(QtWidgets.QWidget):
         if self.drawornot =='yes' :
             #Draw 斷面
             self.qpainter.setBrush(QColor(230,230,230))
-            self.qpainter.drawRect(QRect(0, 0, self.B,self.D))
+            self.qpainter.drawRect(QRect(0, 0, int(self.B), int(self.D)))
 
             # Draw 剪力筋
             qpen = QPen(Qt.red, 1.5, Qt.SolidLine)
             self.qpainter.setPen(qpen)
-            self.qpainter.drawRoundedRect(self.str_start,self.str_start,self.str_height,self.str_width,self.arcd/2,self.arcd/2) 
-            self.qpainter.drawArc(self.str_start,self.str_start,self.arcd,self.arcd,45*16,180*16)
-            self.qpainter.drawLine(self.cuvre_start[0],self.cuvre_start[1],self.cuvre_start[0]+self.cuvre_length/2**0.5
-                                  ,self.cuvre_start[0]+self.cuvre_length/2**0.5) 
-            self.qpainter.drawLine(self.cuvre_start[0]-self.arcd/2**0.5,self.cuvre_start[1]+self.arcd/2**0.5,
-                                   self.cuvre_start[0]+self.cuvre_length/2**0.5-self.arcd/2**0.5,self.cuvre_start[0]+self.cuvre_length/2**0.5+self.arcd/2**0.5) 
+            self.qpainter.drawRoundedRect(int(self.str_start),int(self.str_start),int(self.str_height),int(self.str_width),int(self.arcd/2),int(self.arcd/2)) 
+            self.qpainter.drawArc(int(self.str_start),int(self.str_start),int(self.arcd),int(self.arcd),45*16,180*16)
+            self.qpainter.drawLine(int(self.cuvre_start[0]),int(self.cuvre_start[1]),int(self.cuvre_start[0]+self.cuvre_length/2**0.5)
+                                  ,int(self.cuvre_start[0]+self.cuvre_length/2**0.5)) 
+            self.qpainter.drawLine(int(self.cuvre_start[0]-self.arcd/2**0.5),int(self.cuvre_start[1]+self.arcd/2**0.5),
+                                   int(self.cuvre_start[0]+self.cuvre_length/2**0.5-self.arcd/2**0.5),int(self.cuvre_start[0]+self.cuvre_length/2**0.5+self.arcd/2**0.5)) 
             # Draw 鋼筋
             qpen = QPen(Qt.black, 1.5, Qt.SolidLine)
             self.qpainter.setPen(qpen)
             self.qpainter.setBrush(Qt.black)
             for i in range(2) :
                 for j in range(self.Nx) :
-                     self.qpainter.drawEllipse(self.xstart[0]+j*self.db_h[0],self.ystart[i],self.bard[0],self.bard[0])
+                     self.qpainter.drawEllipse(int(self.xstart[0]+j*self.db_h[0]),int(self.ystart[i]),int(self.bard[0]),int(self.bard[0]))
                 for j in range(self.Ny) :
-                     self.qpainter.drawEllipse(self.xstart[i],self.ystart[1]+j*self.db_h[1],self.bard[1],self.bard[1])
+                     self.qpainter.drawEllipse(int(self.xstart[i]),int(self.ystart[1]+j*self.db_h[1]),int(self.bard[1]),int(self.bard[1]))
 
             
 
