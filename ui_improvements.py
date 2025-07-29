@@ -6,7 +6,7 @@ Improves label visibility and responsive design
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from language_manager import lang_manager
-from input_validation import input_validator
+# from input_validation import input_validator  # Currently not available
 
 class UIImprovements:
     """Class to improve UI label visibility and responsive design"""
@@ -133,13 +133,6 @@ class UIImprovements:
             
         # Improve overall window responsiveness
         UIImprovements.improve_window_responsiveness(ui_window)
-        
-        # Apply input validation for better user experience
-        try:
-            from input_validation import input_validator
-            input_validator.apply_validation_to_form(ui_window)
-        except ImportError:
-            pass  # Continue without validation if module not available
     
     @staticmethod
     def improve_button_styling(button):
@@ -327,3 +320,29 @@ class UIImprovements:
 
 # Global UI improvements instance
 ui_improvements = UIImprovements()
+
+# Apply language manager settings
+try:
+    lang_manager.set_default_language("th")  # Set default language to Thai
+    lang_manager.add_language("en", "English")
+    lang_manager.add_language("zh", "Chinese")
+    
+    # Load user preferred language if available
+    user_language = lang_manager.load_user_preference()
+    if user_language:
+        lang_manager.set_current_language(user_language)
+except Exception as e:
+    # If language manager fails, continue without it
+    pass
+
+# Connect language change signal to update UI
+try:
+    def on_language_changed(new_language):
+        """Update UI language on change"""
+        lang_manager.set_current_language(new_language)
+        # TODO: Add code to update all translatable UI elements
+        
+    lang_manager.language_changed.connect(on_language_changed)
+except Exception as e:
+    # If signal connection fails, continue without it
+    pass
