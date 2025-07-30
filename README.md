@@ -8,7 +8,7 @@ This program provides users to analyze RC sections strength including RC beam an
 ## Installation
 ```python
 $ python -m pip install  matplotlib
-$ python -m pip install  PyQt5, pyqt5-tools
+$ python -m pip install PyQt5 pyqt5-tools
 ```
 
 ## How to Use
