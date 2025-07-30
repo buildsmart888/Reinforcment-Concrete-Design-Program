@@ -1,0 +1,9 @@
+# Requirements สำหรับ GUI ปรับปรุง
+PyQt5>=5.15.0
+matplotlib>=3.5.0
+pandas>=1.3.0
+numpy>=1.21.0
+
+# Optional packages for enhanced features
+Pillow>=8.0.0  # สำหรับการจัดการรูปภาพ
+reportlab>=3.6.0  # สำหรับสร้าง PDF (future feature)
