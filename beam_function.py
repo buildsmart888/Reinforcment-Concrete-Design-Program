@@ -275,7 +275,7 @@ def math2(matha,mathb,mathc):
         if q<0:
             output="Your equation has no root."
         elif q==0:
-            output=-mathb/2*matha
+            output = -mathb / (2 * matha)
         else:
             q1=(-mathb+q**0.5)/(2*matha)
             q2=(-mathb-q**0.5)/(2*matha)
