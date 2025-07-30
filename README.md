@@ -8,7 +8,7 @@ This program provides users to analyze RC sections strength including RC beam an
 ## Installation
 ```python
 $ python -m pip install  matplotlib
-$ python -m pip install  PyQt5, pyqt5-tools
+$ python -m pip install PyQt5 pyqt5-tools
 ```
 
 ## How to Use
@@ -19,25 +19,25 @@ $ python -m pip install  PyQt5, pyqt5-tools
   </div> 
   
   * **RC Rectangular Beam Calculation** :  
-  Input section informations and load deamands of the beam, the program will check if the beam's moment and shear capacity are enough.
+  Input section information and load demands of the beam, the program will check if the beam's moment and shear capacity are enough.
     <div align="center">
     <img  src="https://github.com/chihweisu/Reinforcment-Concrete-Design-Program/blob/master/Readme_asset/gif_recbeamcal.gif" width="30%" >
     </div> 
   
   * **RC T-Beam Calculation** :   
-  Input section informations and load deamands of the beam, the program will check if the beam's moment and shear capacity are enough.
+  Input section information and load demands of the beam, the program will check if the beam's moment and shear capacity are enough.
   <div align="center">
   <img  src="https://github.com/chihweisu/Reinforcment-Concrete-Design-Program/blob/master/Readme_asset/gif_tbeam.gif" width="40%" >
   </div>
   
   * **RC Beam Design** :   
-  Input section informations and load deamands of the beam, the program will design the required reinforcement of the beam.
+  Input section information and load demands of the beam, the program will design the required reinforcement of the beam.
   <div align="center">
   <img  src="https://github.com/chihweisu/Reinforcment-Concrete-Design-Program/blob/master/Readme_asset/gif_beamdsgn.gif" width="45%" >
   </div> 
   
   * **RC Column Calculation** :   
-  Input section informations and load deamands of the column, the program will draw the P-M-M interation diagram to check if the columns's capacity is enough.
+  Input section information and load demands of the column, the program will draw the P-M-M interaction diagram to check if the column's capacity is enough.
   <div align="center">
   <img  src="https://github.com/chihweisu/Reinforcment-Concrete-Design-Program/blob/master/Readme_asset/gif_colcal.gif" width="65%" >
   </div> 
