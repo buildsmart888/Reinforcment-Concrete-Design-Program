@@ -18,6 +18,8 @@ def rebar_info(keyin):
     chart={'#3(D10)': 0.953, '#4(D13)': 1.27,'#5(D16)': 1.588,'#6(D19)': 1.905,
             '#7(D22)': 2.223, '#8(D25)': 2.54,'#9(D29)': 2.865,'#10(D32)': 3.226,'#11(D36)': 3.581}
     rebar_d=chart.get(keyin,'none')
+    if rebar_d == 'none':
+        return 'none', 'none'
     Ab=math.pi*rebar_d**2/4
     return rebar_d, Ab
 
