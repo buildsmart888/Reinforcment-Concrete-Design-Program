@@ -310,8 +310,9 @@ class Ui_RcRecBeamCalImproved(object):
         # Create scroll area for inputs with better proportions
         scroll_area = QtWidgets.QScrollArea()
         scroll_area.setWidgetResizable(True)
-        scroll_area.setMaximumWidth(750)  # ขยายความกว้างให้มากขึ้นอีก
-        scroll_area.setMinimumWidth(700)  # เพิ่มความกว้างขั้นต่ำ
+        # ลบ maximum width เพื่อให้ยืดตามสัดส่วน 40%
+        # scroll_area.setMaximumWidth(750)  # ลบออก
+        scroll_area.setMinimumWidth(600)  # ลดขนาดขั้นต่ำ
         scroll_area.setMinimumHeight(900)  # กำหนดความสูงขั้นต่ำเพื่อให้เห็นปุ่มครบ
         # กำหนดให้เลื่อนได้แค่แนวตั้งเท่านั้น
         scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -350,7 +351,7 @@ class Ui_RcRecBeamCalImproved(object):
         # ลบ addStretch() เพื่อไม่ให้ปุ่มถูกดันไปไกล
         
         scroll_area.setWidget(input_widget)
-        main_layout.addWidget(scroll_area, 0)  # ลดให้ไม่ยืดตาม weight
+        main_layout.addWidget(scroll_area, 2)  # สัดส่วน 40% (2 ส่วน)
     
     def setup_dimensions_section(self, parent_layout):
         """Setup beam dimensions input section with improved visibility"""
@@ -646,7 +647,7 @@ class Ui_RcRecBeamCalImproved(object):
         # Report tab
         self.setup_report_tab()
         
-        main_layout.addWidget(self.tab_widget, 2)  # Give more space to output
+        main_layout.addWidget(self.tab_widget, 3)  # สัดส่วน 60% (3 ส่วน)
     
     def setup_results_tab(self):
         """Setup results display tab"""
