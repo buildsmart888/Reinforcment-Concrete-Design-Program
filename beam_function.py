@@ -168,13 +168,33 @@ def cal_shear_strngth(stirrup_d,stirrup_num,stirrup_span,fc,fy,B,d) :
     return Av,Vc,phiVn
 
 def check_stirrup_span_limit(Vu,Vc,fc,fy,B,d,Av) :
-    if Vu<0.5*Vc :
+    # ตาม ACI 9.7.6.2.2 Maximum spacing of legs of shear reinforcement
+    # Required Vs = Vu/φ - Vc
+    phi_v = 0.75  # reduction factor for shear
+    Vs_required = Vu/phi_v - Vc  # กำลังเฉือนที่ต้องการจากเหล็กปลอก
+    
+    if Vu <= 0.5*phi_v*Vc :  # 0.5φVc
         s_max=['no need for stirrup']
-    elif Vu<2*Vc :
-        s_max=[str(int(min(Av*fy/(3.5*B),Av*fy/(0.2*fc**0.5*B),d/2,60)*10))] #mm
-    else :
-        s_max=[str(int(min(Av*fy/(3.5*B),Av*fy/(0.2*fc**0.5*B),d/4,30)*10))] #mm
-    return s_max
+        s_max1 = 'no need'
+        s_max2 = 'no need'
+    elif Vs_required <= 0.33*(fc**0.5)*B*d/1000 :  # 0.33√f'c*b*d (tf)
+        # ระยะห่างสูงสุด = d/2 หรือ 600 มม.
+        s_max1_calc = 600  # mm ตามมาตรฐาน
+        s_max2_calc = d/2*10  # d/2 (cm to mm)
+        s_max_calc = min(s_max1_calc, s_max2_calc)
+        s_max=[str(int(s_max_calc))]
+        s_max1 = str(int(s_max1_calc))
+        s_max2 = str(int(s_max2_calc))
+    else :  # Vs > 0.33√f'c*b*d
+        # ระยะห่างสูงสุด = d/4 หรือ 300 มม.
+        s_max1_calc = 300  # mm ตามมาตรฐาน
+        s_max2_calc = d/4*10  # d/4 (cm to mm)
+        s_max_calc = min(s_max1_calc, s_max2_calc)
+        s_max=[str(int(s_max_calc))]
+        s_max1 = str(int(s_max1_calc))
+        s_max2 = str(int(s_max2_calc))
+    
+    return s_max, s_max1, s_max2
 
 #////////////////// For   矩形梁///////////////////////////
 def cal_recbeam_Mn(dd,fc,beta,B,d,fy,Ass,As) :

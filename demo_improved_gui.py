@@ -23,60 +23,62 @@ try:
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
     import numpy as np
     
-    # ตั้งค่า font สำหรับภาษาไทย
+    # ตั้งค่า font สำหรับภาษาไทยและสัญลักษณ์พิเศษ
     import matplotlib.font_manager as fm
-    plt.rcParams['font.family'] = ['TH Sarabun New', 'Arial Unicode MS', 'DejaVu Sans']
-    plt.rcParams['font.size'] = 10
-    plt.rcParams['axes.unicode_minus'] = False
     
-    # ฟังก์ชันตั้งค่าฟอนต์ภาษาไทยสำหรับ PDF
-    def setup_thai_font_for_pdf():
-        """ตั้งค่าฟอนต์ภาษาไทยสำหรับ PDF export"""
+    # ใช้ฟอนต์ที่รองรับสัญลักษณ์กรีกและไทย
+    plt.rcParams['font.family'] = ['Arial Unicode MS', 'DejaVu Sans', 'Liberation Sans', 'TH Sarabun New']
+    plt.rcParams['font.size'] = 12
+    plt.rcParams['axes.unicode_minus'] = False
+    plt.rcParams['mathtext.default'] = 'regular'  # ใช้ฟอนต์ปกติสำหรับ math text
+    
+    # ฟังก์ชันตั้งค่าฟอนต์สำหรับ PDF export
+    def setup_font_for_pdf():
+        """ตั้งค่าฟอนต์ที่รองรับสัญลักษณ์พิเศษสำหรับ PDF export"""
         try:
-            # หาฟอนต์ภาษาไทยที่มีในระบบ
-            thai_fonts = [
-                'TH Sarabun New',
-                'Angsana New', 
-                'Cordia New',
-                'DilleniaUPC',
-                'EucrosiaUPC',
-                'IrisUPC',
-                'JasmineUPC',
-                'KodchiangUPC',
-                'LilyUPC',
-                'Arial Unicode MS',
-                'Noto Sans Thai',
-                'THSarabunNew'
+            # หาฟอนต์ที่รองรับสัญลักษณ์กรีกและไทย
+            preferred_fonts = [
+                'Arial Unicode MS',     # รองรับสัญลักษณ์กรีกและไทย
+                'DejaVu Sans',         # รองรับสัญลักษณ์กรีก
+                'Liberation Sans',     # รองรับสัญลักษณ์กรีก
+                'Noto Sans',          # รองรับหลากหลายสัญลักษณ์
+                'Segoe UI',           # รองรับสัญลักษณ์พิเศษ
+                'TH Sarabun New'      # สำหรับไทย (แต่ไม่รองรับกรีก)
             ]
             
             available_fonts = [f.name for f in fm.fontManager.ttflist]
-            thai_font_found = None
+            best_font = None
             
-            for font in thai_fonts:
+            for font in preferred_fonts:
                 if font in available_fonts:
-                    thai_font_found = font
+                    best_font = font
                     break
             
-            if thai_font_found:
-                # ตั้งค่าฟอนต์หลักเป็นฟอนต์ภาษาไทย
-                plt.rcParams['font.family'] = [thai_font_found, 'Arial Unicode MS', 'DejaVu Sans']
-                print(f"Using Thai font: {thai_font_found}")
+            if best_font:
+                # ตั้งค่าฟอนต์ที่รองรับสัญลักษณ์พิเศษ
+                plt.rcParams['font.family'] = [best_font, 'Arial Unicode MS', 'DejaVu Sans']
+                print(f"Using font for symbols: {best_font}")
             else:
                 # ใช้ฟอนต์สำรองที่รองรับ Unicode
                 plt.rcParams['font.family'] = ['Arial Unicode MS', 'DejaVu Sans', 'sans-serif']
-                print("Using fallback Unicode font: Arial Unicode MS")
+                print("Using fallback Unicode font for symbols")
                 
-            # ตั้งค่าเพิ่มเติมสำหรับการแสดงผลภาษาไทย
+            # ตั้งค่าเพิ่มเติมสำหรับสัญลักษณ์พิเศษ
             plt.rcParams['font.size'] = 12
             plt.rcParams['axes.unicode_minus'] = False
             plt.rcParams['text.usetex'] = False
+            plt.rcParams['mathtext.default'] = 'regular'
+            plt.rcParams['mathtext.fontset'] = 'dejavusans'  # ใช้ DejaVu สำหรับ math symbols
             
-            return thai_font_found or 'Arial Unicode MS'
+            return best_font or 'Arial Unicode MS'
             
         except Exception as e:
             print(f"Font setup error: {e}")
             plt.rcParams['font.family'] = ['Arial Unicode MS', 'DejaVu Sans', 'sans-serif']
             return 'Arial Unicode MS'
+    
+    # เรียกใช้ฟังก์ชันตั้งค่าฟอนต์เริ่มต้น
+    setup_font_for_pdf()
     
 except ImportError as e:
     print(f"Warning: Optional dependencies not found: {e}")
@@ -133,6 +135,36 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
             (screen.height() - size.height()) // 2
         )
     
+    def calculate_effective_depth(self):
+        """คำนวณความลึกมีประสิทธิภาพอัตโนมัติตามหลักวิศวกรรม"""
+        try:
+            # ดึงค่าจาก UI
+            depth = float(self.ui.depth.text())
+            cover = float(self.ui.cover.text())
+            
+            # ดึงขนาดเหล็กรับแรงดึง
+            main_rebar_text = self.ui.main_rebar_size.currentText()
+            main_diameter = self.extract_rebar_diameter(main_rebar_text)
+            
+            # ดึงขนาดเหล็กปลอก
+            stirrup_text = self.ui.stirrup_size.currentText()
+            stirrup_diameter = self.extract_rebar_diameter(stirrup_text)
+            
+            # คำนวณความลึกมีประสิทธิภาพ
+            # d = D - cover - stirrup_diameter - main_diameter/2
+            effective_depth = depth - cover - stirrup_diameter - (main_diameter / 2)
+            
+            # อัปเดต UI display
+            self.ui.d_display.setText(f"{effective_depth:.0f} มม.")
+            
+            return effective_depth
+            
+        except (ValueError, AttributeError) as e:
+            # ถ้าไม่สามารถคำนวณได้ ให้ใช้ค่าเริ่มต้น
+            default_d = 450
+            self.ui.d_display.setText(f"{default_d:.0f} มม. (ค่าเริ่มต้น)")
+            return default_d
+    
     def setup_connections(self):
         """เชื่อมต่อ signals และ slots"""
         # Connect buttons
@@ -143,13 +175,19 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
         
         # Connect input validation
         input_widgets = [
-            self.ui.width, self.ui.depth, self.ui.d, self.ui.cover,
+            self.ui.width, self.ui.depth, self.ui.cover,  # ลบ self.ui.d เพราะคำนวณอัตโนมัติ
             self.ui.fc, self.ui.fy, self.ui.main_rebar_num, self.ui.comp_rebar_num,
             self.ui.stirrup_spacing, self.ui.moment, self.ui.shear
         ]
         
         for widget in input_widgets:
             widget.textChanged.connect(self.validate_inputs)
+            widget.textChanged.connect(self.calculate_effective_depth)  # เพิ่มการคำนวณอัตโนมัติ
+            
+        # Connect combobox changes for effective depth calculation
+        combo_widgets = [self.ui.main_rebar_size, self.ui.stirrup_size]
+        for widget in combo_widgets:
+            widget.currentTextChanged.connect(self.calculate_effective_depth)
             
         # Connect combo box changes
         self.ui.main_rebar_size.currentTextChanged.connect(self.validate_inputs)
@@ -169,7 +207,8 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
             'depth': '500', 
             'd': '450',
             'cover': '40',
-            'fc': '245.00',
+            'length': '6.0',
+            'fc': '240.00',
             'fy': '4000.00',
             'main_rebar_size': '#5(D16)',
             'main_rebar_num': '4',
@@ -184,8 +223,9 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
         
         self.ui.width.setText(sample_data['width'])
         self.ui.depth.setText(sample_data['depth'])
-        self.ui.d.setText(sample_data['d'])
+        # ลบการกำหนด d เพราะจะคำนวณอัตโนมัติ
         self.ui.cover.setText(sample_data['cover'])
+        # ลบ self.ui.length.setText(sample_data['length']) - ไม่ใช้แล้ว
         self.ui.fc.setText(sample_data['fc'])
         self.ui.fy.setText(sample_data['fy'])
         self.ui.main_rebar_size.setCurrentText(sample_data['main_rebar_size'])
@@ -198,6 +238,9 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
         self.ui.moment.setText(sample_data['moment'])
         self.ui.shear.setText(sample_data['shear'])
         # ลบการตั้งค่า torsion แล้ว
+        
+        # คำนวณ effective depth อัตโนมัติหลังจากโหลดข้อมูล
+        self.calculate_effective_depth()
     
     def validate_inputs(self):
         """ตรวจสอบความถูกต้องของข้อมูลที่ป้อน"""
@@ -211,13 +254,15 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
                 self.ui.depth.text(), min_value=200, max_value=2000
             )
             
-            d_valid, d_msg = ModernInputValidator.validate_positive_number(
-                self.ui.d.text(), min_value=150, max_value=1950
-            )
+            # ลบการ validate effective depth เพราะคำนวณอัตโนมัติ
+            d_valid = True  # ไม่ต้องตรวจสอบเพราะคำนวณอัตโนมัติ
+            d_msg = ""
             
             cover_valid, cover_msg = ModernInputValidator.validate_positive_number(
                 self.ui.cover.text(), min_value=20, max_value=100
             )
+            
+            # ลบการ validate ความยาวคาน - ตามที่ผู้ใช้ร้องขอ
             
             # Validate materials
             mat_valid, mat_msg = ModernInputValidator.validate_material_properties(
@@ -237,16 +282,18 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
             
             # Validate beam dimension relationships
             if width_valid and depth_valid and d_valid and cover_valid:
+                # ใช้ effective depth ที่คำนวณอัตโนมัติ
+                d_calculated = self.calculate_effective_depth()
                 dim_valid, dim_msg = ModernInputValidator.validate_beam_dimensions(
                     self.ui.width.text(), self.ui.depth.text(), 
-                    self.ui.d.text(), self.ui.cover.text()
+                    str(d_calculated), self.ui.cover.text()
                 )
             else:
                 dim_valid = False
                 dim_msg = ""
             
             # Enable calculate button only if all validations pass
-            all_valid = all([width_valid, depth_valid, d_valid, cover_valid, 
+            all_valid = all([width_valid, depth_valid, d_valid, cover_valid,
                            mat_valid, rebar_valid, load_valid, dim_valid])
             self.ui.btn_calculate.setEnabled(all_valid)
             
@@ -256,8 +303,8 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
             else:
                 error_msgs = [msg for valid, msg in [
                     (width_valid, width_msg), (depth_valid, depth_msg), (d_valid, d_msg),
-                    (cover_valid, cover_msg), (mat_valid, mat_msg), (rebar_valid, rebar_msg),
-                    (load_valid, load_msg), (dim_valid, dim_msg)
+                    (cover_valid, cover_msg), (mat_valid, mat_msg), 
+                    (rebar_valid, rebar_msg), (load_valid, load_msg), (dim_valid, dim_msg)
                 ] if not valid and msg]
                 
                 if error_msgs:
@@ -275,10 +322,11 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
             # Get input values - use ksc units directly (no conversion needed)
             B = float(self.ui.width.text()) / 10   # mm to cm
             D = float(self.ui.depth.text()) / 10   # mm to cm
-            d = float(self.ui.d.text()) / 10       # mm to cm
+            d = self.calculate_effective_depth() / 10  # mm to cm (คำนวณอัตโนมัติ)
+            # ลบ L = float(self.ui.length.text()) - ไม่ใช้ความยาวคานแล้ว
             fc = float(self.ui.fc.text())          # ksc (already in correct units)
             fy = float(self.ui.fy.text())          # ksc (already in correct units)
-            print(f"มิติคาน: B={B*10:.0f} มม., D={D*10:.0f} มม., d={d*10:.0f} มม.")
+            print(f"มิติคาน: B={B*10:.0f} มม., D={D*10:.0f} มม., d={d*10:.0f} มม. (คำนวณอัตโนมัติ)")
             print(f"กำลังวัสดุ: fc={fc:.1f} ksc, fy={fy:.1f} ksc")
             
             # Reinforcement details
@@ -314,7 +362,7 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
             
             # Calculate shear strength using original function
             [Av, Vc, phiVn] = cal_shear_strngth(db_stirrup, stirrup_num, stirrup_spacing, fc, fy, B, d_eff)
-            [s_max] = check_stirrup_span_limit(Vu, Vc, fc, fy, B, d_eff, Av)
+            [s_max, s_max1, s_max2] = check_stirrup_span_limit(Vu, Vc, fc, fy, B, d_eff, Av)
             
             # Compile results
             results = {
@@ -332,9 +380,11 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
                 'Cc': Cc, 'Cs': Cs, 'Mn': Mn, 'phiMn': phi*Mn,
                 'es': es, 'et': et, 'result0': result0, 'result1': result1, 'result2': result2,
                 'Av': Av, 'Vc': Vc, 'phiVn': phiVn, 's_max': s_max[0] if s_max[0] != 'no need for stirrup' else 'ไม่จำเป็นใช้เหล็กปลอก',
+                's_max1': s_max1, 's_max2': s_max2,  # เพิ่มค่าเงื่อนไขแยก
                 
                 # Effective depth from calculation for technical purposes
                 'd_eff': d_eff*10,  # เพิ่มค่า d_eff สำหรับการคำนวณภายใน
+                # ลบ beam_length เพราะไม่ใช้แล้ว
                 
                 # Check results
                 'moment_adequate': phi*Mn >= Mu,
@@ -474,9 +524,9 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
    การเปลี่ยนรูปสูงสุด = 0.003 × (dt-c)/c = {results['et']:.6f}
    สถานะการควบคุม: {result1_th}
 
-6. ค่า φ (ตัวคูณความปลอดภัย):
-   สูตร: φ = 0.9 สำหรับการควบคุมด้วยแรงดึง
-   φ = {results['phi']:.3f}
+6. ค่า ϕ (ตัวคูณความปลอดภัย):
+   สูตร: ϕ = 0.9 สำหรับการควบคุมด้วยแรงดึง
+   ϕ = {results['phi']:.3f}
 
 7. กำลังรับโมเมนต์:
    สูตร: Cc = 0.85×f'c×a×b (a = β1×c)
@@ -489,7 +539,7 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
    Mn = {results['As']:.2f}×{results['fy']:.0f}×({results['d']/10:.1f}-{results['beta']:.3f}×{results['c']:.2f}/2) + {results['Cs']:.2f}×(d-d')
    Mn = {results['Mn']:.2f} tf-m
    
-   φMn = {results['phi']:.3f}×{results['Mn']:.2f} = {results['phiMn']:.2f} tf-m
+   ϕMn = {results['phi']:.3f}×{results['Mn']:.2f} = {results['phiMn']:.2f} tf-m
 
 📊 การคำนวณแรงเฉือนแบบละเอียด:
 
@@ -509,13 +559,18 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
    สูตร: Vn = Vc + Vs
    φVn = 0.75 × Vn = {results['phiVn']:.2f} tf
 
-5. ระยะห่างเหล็กปลอกสูงสุด:
-   s_max = {results['s_max']} มม.
+5. ระยะห่างเหล็กปลอก (ตาม ACI 9.7.6.2.2):
+   ระยะห่างที่กรอก: s = {results['stirrup_spacing']:.0f} มม.
+   ระยะห่างสูงสุดที่อนุญาต (มีสองเงื่อนไข):
+   - s_max1 = {results['s_max1']} มม. (ตามมาตรฐาน)
+   - s_max2 = d/2 = {results['s_max2']} มม. (ความลึกมีประสิทธิภาพ)
+   การตรวจสอบ: {'✓ เหมาะสม' if results['spacing_adequate'] else '✗ ไม่เหมาะสม'}
+   หมายเหตุ: การคำนวณตาม ACI 318 Table 9.7.6.2.2
 
 ✅ การตรวจสอบความปลอดภัย:
 
 🔹 โมเมนต์:
-   φMn = {results['phiMn']:.2f} tf-m {'≥' if results['moment_adequate'] else '<'} Mu = {results['Mu']:.2f} tf-m
+   ϕMn = {results['phiMn']:.2f} tf-m {'≥' if results['moment_adequate'] else '<'} Mu = {results['Mu']:.2f} tf-m
    {moment_status} (อัตราส่วน = {results['moment_ratio']:.2f})
 
 🔹 แรงเฉือน:
@@ -717,9 +772,9 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
 <p><strong>สถานะการควบคุม:</strong> <span style="color: #27ae60; font-weight: bold;">{result1_th}</span></p>
 </div>
 
-### 6️⃣ ค่า φ (ตัวคูณความปลอดภัย)
+### 6️⃣ ค่า ϕ (ตัวคูณความปลอดภัย)
 <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
-<p>สำหรับการควบคุมด้วยแรงดึง: φ = <span style="color: #e74c3c; font-weight: bold;">{results['phi']:.3f}</span></p>
+<p>สำหรับการควบคุมด้วยแรงดึง: ϕ = <span style="color: #e74c3c; font-weight: bold;">{results['phi']:.3f}</span></p>
 </div>
 
 ### 7️⃣ กำลังรับโมเมนต์
@@ -728,7 +783,7 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
 <p>Cc = 0.85×{fc_ksc:.1f}×{results['beta']:.3f}×{results['c']:.2f}×{width_cm:.0f} = <span style="color: #e74c3c; font-weight: bold;">{Cc_kg:.0f} กก.</span></p>
 <p><strong>แรงในเหล็กรับแรงอัด:</strong> Cs = f's×A's = <span style="color: #e74c3c; font-weight: bold;">{Cs_kg:.0f} กก.</span></p>
 <p><strong>โมเมนต์ต้านทานนามบัญญัติ:</strong> Mn = <span style="color: #e74c3c; font-weight: bold;">{results['Mn']:.2f} ตัน-เมตร</span></p>
-<p><strong>โมเมนต์ต้านทานออกแบบ:</strong> φMn = {results['phi']:.3f}×{results['Mn']:.2f} = <span style="color: #e74c3c; font-weight: bold;">{results['phiMn']:.2f} ตัน-เมตร</span></p>
+<p><strong>โมเมนต์ต้านทานออกแบบ:</strong> ϕMn = {results['phi']:.3f}×{results['Mn']:.2f} = <span style="color: #e74c3c; font-weight: bold;">{results['phiMn']:.2f} ตัน-เมตร</span></p>
 </div>
 
 ---
@@ -759,7 +814,13 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
 
 ### 5️⃣ ระยะห่างเหล็กปลอกสูงสุด
 <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
-<p>s_max = min(d/2, 600) = <span style="color: #e74c3c; font-weight: bold;">{results['s_max']} มม.</span></p>
+<p>ระยะห่างเหล็กปลอก (ตาม ACI 9.7.6.2.2):</p>
+<p>s = {results['stirrup_spacing']:.0f} มม. (ที่กรอก)</p>
+<p>ระยะห่างสูงสุดที่อนุญาต (มีสองเงื่อนไข):</p>
+<p>- s_max1 = <span style="color: #e74c3c; font-weight: bold;">{results['s_max1']} มม.</span> (ตามมาตรฐาน)</p>
+<p>- s_max2 = d/2 = <span style="color: #e74c3c; font-weight: bold;">{results['s_max2']} มม.</span> (ความลึกมีประสิทธิภาพ)</p>
+<p>การตรวจสอบ: <span style="color: {'green' if results['spacing_adequate'] else 'red'}; font-weight: bold;">{'✓ เหมาะสม' if results['spacing_adequate'] else '✗ ไม่เหมาะสม'}</span></p>
+<p>หมายเหตุ: การคำนวณตาม ACI 318 Table 9.7.6.2.2</p>
 </div>
 
 ---
@@ -820,7 +881,7 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
   - **ความเค้น**: กิโลกรัมต่อตารางเซนติเมตร (กก./ตร.ซม.)
 - การเปลี่ยนรูปในเหล็กรับแรงดึง (εs) = ค่าการเปลี่ยนรูปในเหล็กชั้นในสุด
 - การเปลี่ยนรูปสูงสุด (εt) = ค่าการเปลี่ยนรูปในเหล็กที่อยู่ไกลสุดจากแกนกลาง
-- ตัวคูณความปลอดภัย (φ) = ตัวคูณลดกำลัง (strength reduction factor)
+- ตัวคูณความปลอดภัย (ϕ) = ตัวคูณลดกำลัง (strength reduction factor)
 
 </div>
 
@@ -904,8 +965,13 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
 3. กำลังรับแรงเฉือนรวม:
    φVn = {results['phiVn']*1000:.0f} กก. ({results['phiVn']:.2f} ตัน)
 
-4. ระยะห่างเหล็กปลอกสูงสุด:
-   s_max = {results['s_max']} มม.
+4. ระยะห่างเหล็กปลอก (ตาม ACI 9.7.6.2.2):
+   ระยะห่างที่กรอก: s = {results['stirrup_spacing']:.0f} มม.
+   ระยะห่างสูงสุดที่อนุญาต (มีสองเงื่อนไข):
+   - s_max1 = {results['s_max1']} มม. (ตามมาตรฐาน)
+   - s_max2 = d/2 = {results['s_max2']} มม. (ความลึกมีประสิทธิภาพ)
+   การตรวจสอบ: {'✓ เหมาะสม' if results['spacing_adequate'] else '✗ ไม่เหมาะสม'}
+   หมายเหตุ: การคำนวณตาม ACI 318 Table 9.7.6.2.2
 
 ✅ การตรวจสอบความปลอดภัย:
 
@@ -1165,20 +1231,22 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
         """วาดแผนภาพหน้าตัดคาน"""
         # ตั้งค่าฟอนต์ภาษาไทยสำหรับการวาดภาพ
         try:
-            thai_font = setup_thai_font_for_pdf()
+            font_used = setup_font_for_pdf()
         except:
-            thai_font = 'Arial Unicode MS'
+            font_used = 'Arial Unicode MS'
             
         ax.clear()
         ax.set_aspect('equal')
         ax.set_title(f'หน้าตัดคาน {results["B"]:.0f}×{results["D"]:.0f} มม.', 
-                    fontweight='bold', fontsize=14, fontfamily=thai_font)
+                    fontweight='bold', fontsize=14, fontfamily=font_used)
         
         # ขนาดคาน (แปลงเป็น ซม. สำหรับการแสดงผล)
         B = results['B'] / 10  # มม. -> ซม.
         D = results['D'] / 10  # มม. -> ซม.
-        d = results['d'] / 10  # มม. -> ซม.
-        cover = 4  # สมมติคลีนเนสอิน 40 มม. = 4 ซม.
+        d = results['d'] / 10  # มม. -> ซม. (ความลึกมีประสิทธิภาพที่คำนวณได้)
+        
+        # คำนวณระยะหุ้มจริงจากข้อมูล
+        cover = (D * 10 - results['d']) / 2 / 10  # แปลงเป็น ซม.
         
         # วาดคาน
         beam = Rectangle((0, 0), B, D, linewidth=2, edgecolor='black', facecolor='lightgray', alpha=0.7)
@@ -1195,19 +1263,19 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
         # เส้นมิติ
         ax.plot([0, B], [-2, -2], 'k-', linewidth=1)
         ax.text(B/2, -3, f'b = {results["B"]:.0f} มม.', ha='center', va='top', 
-               fontsize=10, fontfamily=thai_font)
+               fontsize=10, fontfamily=font_used)
         ax.plot([-1.5, -1.5], [0, D], 'k-', linewidth=1)
         ax.text(-2.5, D/2, f'h = {results["D"]:.0f} มม.', ha='center', va='center', 
-               rotation=90, fontsize=10, fontfamily=thai_font)
+               rotation=90, fontsize=10, fontfamily=font_used)
         
         # วาดเหล็กรับแรงดึง (tension steel)
         main_dia = self.extract_rebar_diameter(results['main_rebar']) / 10  # มม. -> ซม.
         main_num = int(results['main_num'])
         
         if main_num > 0:
-            # คำนวณตำแหน่งเหล็ก
+            # คำนวณตำแหน่งเหล็กรับแรงดึง - ใช้ระยะหุ้มจริง
             steel_spacing = (B - 2*cover) / (main_num - 1) if main_num > 1 else 0
-            y_pos = cover + main_dia/2
+            y_pos = D - d  # ตำแหน่งเหล็กจากด้านล่าง = D - d
             
             for i in range(main_num):
                 x_pos = cover + i * steel_spacing
@@ -1228,10 +1296,16 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
                 circle = plt.Circle((x_pos, y_pos), comp_dia/2, color='blue', zorder=3)
                 ax.add_patch(circle)
         
-        # เส้นระดับ d
-        ax.plot([0, B], [d, d], 'r--', linewidth=1, alpha=0.7)
-        ax.text(B + 0.5, d, f'd = {results["d"]:.0f} มม.', ha='left', va='center', 
-               fontsize=10, color='red', fontfamily=thai_font)
+        # เส้นระดับ d (ความลึกมีประสิทธิภาพจากด้านบน)
+        actual_d_from_top = D - d  # ระยะจากด้านบนของคานถึงระดับ d
+        ax.plot([0, B], [actual_d_from_top, actual_d_from_top], 'r--', linewidth=2, alpha=0.8)
+        ax.text(B + 0.5, actual_d_from_top, f'd = {results["d"]:.0f} มม. (ความลึกมีประสิทธิภาพ)', 
+               ha='left', va='center', fontsize=10, color='red', fontfamily=font_used, weight='bold')
+        
+        # เพิ่มมิติแสดงระยะ d
+        ax.plot([B + 2, B + 2], [0, actual_d_from_top], 'r-', linewidth=1, alpha=0.6)
+        ax.plot([B + 1.8, B + 2.2], [0, 0], 'r-', linewidth=1)
+        ax.plot([B + 1.8, B + 2.2], [actual_d_from_top, actual_d_from_top], 'r-', linewidth=1)
         
         # Legend - ย้ายไปด้านขวานอกหน้าตัดคาน
         legend_x = B + max(B, D) * 0.15  # ตำแหน่ง x ด้านขวา
@@ -1244,42 +1318,42 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
             # วาดจุดสีแดงสำหรับ legend
             ax.plot(legend_x, current_y, 'o', color='red', markersize=8)
             ax.text(legend_x + 1, current_y, f'เหล็กรับแรงดึง: {results["main_rebar"]} จำนวน {main_num} เสน', 
-                   ha='left', va='center', fontsize=9, fontfamily=thai_font)
+                   ha='left', va='center', fontsize=9, fontfamily=font_used)
             current_y -= legend_spacing
             
         if comp_num > 0:
             # วาดจุดสีน้ำเงินสำหรับ legend
             ax.plot(legend_x, current_y, 'o', color='blue', markersize=8)
             ax.text(legend_x + 1, current_y, f'เหล็กรับแรงอัด: {results["comp_rebar"]} จำนวน {comp_num} เสน', 
-                   ha='left', va='center', fontsize=9, fontfamily=thai_font)
+                   ha='left', va='center', fontsize=9, fontfamily=font_used)
             current_y -= legend_spacing
             
         # เพิ่มข้อมูลเหล็กปลอก
         ax.plot(legend_x, current_y, 's', color='green', markersize=6, fillstyle='none', markeredgewidth=2)
         ax.text(legend_x + 1, current_y, f'เหล็กปลอก: {results["stirrup"]} {results["stirrup_type"]} @{results["stirrup_spacing"]:.0f} มม.', 
-               ha='left', va='center', fontsize=9, fontfamily=thai_font)
+               ha='left', va='center', fontsize=9, fontfamily=font_used)
         
         # ปรับแกน - ขยายด้านขวาเพื่อให้พื้นที่สำหรับ legend
         margin = max(B, D) * 0.1
         ax.set_xlim(-margin, B + max(B, D) * 0.6)  # ขยายด้านขวามากขึ้น
         ax.set_ylim(-margin, D + margin)
-        ax.set_xlabel('ระยะทางตามแนวนอน (ซม.)', fontsize=10, fontfamily=thai_font)
-        ax.set_ylabel('ระยะทางตามแนวตั้ง (ซม.)', fontsize=10, fontfamily=thai_font)
+        ax.set_xlabel('ระยะทางตามแนวนอน (ซม.)', fontsize=10, fontfamily=font_used)
+        ax.set_ylabel('ระยะทางตามแนวตั้ง (ซม.)', fontsize=10, fontfamily=font_used)
         ax.grid(True, alpha=0.3)
         
     def draw_moment_curvature_diagram(self, ax, results):
         """วาดแผนภาพโมเมนต์-ความโค้ง"""
         try:
-            thai_font = setup_thai_font_for_pdf()
+            font_used = setup_font_for_pdf()
         except:
-            thai_font = 'Arial Unicode MS'
+            font_used = 'Arial Unicode MS'
             
         ax.clear()
-        ax.set_title('แผนภาพความสัมพันธระหวางโมเมนตและความโคง', 
-                    fontweight='bold', fontsize=12, fontfamily=thai_font)
+        ax.set_title('แผนภาพความสัมพันธ์ระหว่างโมเมนต์และความโค้ง', 
+                    fontweight='bold', fontsize=12, fontfamily=font_used)
         
         # สร้างข้อมูลตัวอย่างสำหรับแผนภาพ M-φ
-        phi = np.linspace(0, 0.01, 100)  # ความโค้ง (1/m)
+        phi_range = np.linspace(0, 0.01, 100)  # ความโค้ง (1/m)
         
         # คำนวณโมเมนต์แบบง่าย (สำหรับการแสดงผล)
         Mn = float(results['Mn'])
@@ -1287,7 +1361,7 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
         
         # สร้างเส้นโค้ง M-φ แบบง่าย
         M = []
-        for p in phi:
+        for p in phi_range:
             if p <= 0.002:  # ช่วงเหล็กยืด
                 m = p * (My / 0.002)
             elif p <= 0.006:  # ช่วงการ hardening
@@ -1297,7 +1371,7 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
             M.append(max(0, m))
         
         # วาดกราฟ
-        ax.plot(phi * 1000, M, 'b-', linewidth=2, label=f'M-φ สำหรับคาน')
+        ax.plot(phi_range * 1000, M, 'b-', linewidth=2, label=f'M-ϕ สำหรับคาน')
         
         # เส้นแสดงจุดสำคัญ
         ax.axhline(y=My, color='g', linestyle='--', alpha=0.7, label=f'My = {My:.1f} ตัน-ม')
@@ -1305,9 +1379,9 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
         ax.axhline(y=results['Mu'], color='orange', linestyle=':', alpha=0.7, 
                   label=f'Mu = {results["Mu"]:.1f} ตัน-ม (ความตองการ)')
         
-        ax.set_xlabel('ความโคง φ (×10⁻³ 1/ม)', fontsize=10, fontfamily=thai_font)
-        ax.set_ylabel('โมเมนต M (ตัน-ม)', fontsize=10, fontfamily=thai_font)
-        ax.legend(prop={'family': thai_font, 'size': 9})
+        ax.set_xlabel('ความโค้ง ? (×10⁻³ 1/ม)', fontsize=10, fontfamily=font_used)
+        ax.set_ylabel('โมเมนต์ M (ตัน-ม)', fontsize=10, fontfamily=font_used)
+        ax.legend(prop={'family': font_used, 'size': 9})
         ax.grid(True, alpha=0.3)
         ax.set_xlim(0, 10)
         ax.set_ylim(0, max(Mn, results['Mu']) * 1.2)
@@ -1407,15 +1481,16 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
             return
         
         # สร้างข้อมูลตัวอย่างสำหรับแผนภาพ
-        x = np.linspace(0, 10, 100)  # ความยาวคาน 10 เมตร
+        L = results.get('beam_length', 6.0)  # ใช้ความยาวคานจากข้อมูล หรือ 6 เมตรถ้าไม่มี
+        x = np.linspace(0, L, 100)  # ความยาวตามที่กำหนด
         
         # โมเมนต์ (แบบ parabolic สำหรับ uniform load)
-        M_max = results['Mu'] / 10  # tf-m
-        moment = M_max * x * (10 - x) / 25  # สูตรโมเมนต์สำหรับ uniform load
+        M_max = results['Mu']  # tf-m (ใช้ค่าจริงที่คำนวณได้)
+        moment = M_max * x * (L - x) / (L*L/4)  # สูตรโมเมนต์สำหรับ uniform load
         
         # Plot โมเมนต์
         ax.plot(x, moment, 'b-', linewidth=2, label='Moment (tf-m)')
-        ax.axhline(y=results['phiMn']/10, color='r', linestyle='--', label=f'φMn = {results["phiMn"]/10:.2f} tf-m')
+        ax.axhline(y=results['phiMn'], color='r', linestyle='--', label=f'φMn = {results["phiMn"]:.2f} tf-m')
         ax.fill_between(x, 0, moment, alpha=0.3, color='blue')
         ax.set_ylabel('โมเมนต์ (tf-m)')
         ax.legend()
@@ -1429,7 +1504,7 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
                    arrowprops=dict(arrowstyle='->', color='black'),
                    fontsize=9)
         
-        ax.set_xlim(0, 10)
+        ax.set_xlim(0, L)
         ax.set_xlabel('ระยะตามแนวคาน (ม.)')
     
     def generate_section_diagram(self, results):
@@ -1496,7 +1571,7 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
         
         if reply == QMessageBox.Yes:
             # Clear all input fields
-            for widget in [self.ui.width, self.ui.depth, self.ui.d, self.ui.cover,
+            for widget in [self.ui.width, self.ui.depth, self.ui.cover,  # ลบ self.ui.d เพราะคำนวณอัตโนมัติ
                           self.ui.fc, self.ui.fy, self.ui.main_rebar_num, self.ui.comp_rebar_num,
                           self.ui.stirrup_spacing, self.ui.moment, self.ui.shear]:
                 widget.clear()
@@ -1506,6 +1581,9 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
             self.ui.comp_rebar_size.setCurrentText('#4(D13)')
             self.ui.stirrup_size.setCurrentText('#3(D10)')
             self.ui.stirrup_type.setCurrentText('เหล็กปลอกสองขา')
+            
+            # Reset effective depth display
+            self.ui.d_display.setText("จะคำนวณจากความสูง - ระยะหุ้ม - ขนาดเหล็ก")
             
             # Clear output areas
             self.ui.results_text.clear()
@@ -1524,7 +1602,7 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
                 'beam_data': {
                     'B': self.ui.width.text(),
                     'D': self.ui.depth.text(),
-                    'd': self.ui.d.text(),
+                    'd': str(self.calculate_effective_depth()),  # ใช้ค่าที่คำนวณอัตโนมัติ
                     'fc': self.ui.fc.text(),
                     'fy': self.ui.fy.text(),
                     'main_rebar': self.ui.main_rebar_size.currentText(),
@@ -1573,7 +1651,7 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
                 
                 self.ui.width.setText(beam_data.get('B', ''))
                 self.ui.depth.setText(beam_data.get('D', ''))
-                self.ui.d.setText(beam_data.get('d', ''))
+                # ลบ self.ui.d.setText(beam_data.get('d', '')) - คำนวณอัตโนมัติ
                 self.ui.fc.setText(beam_data.get('fc', ''))
                 self.ui.fy.setText(beam_data.get('fy', ''))
                 self.ui.main_num.setText(beam_data.get('main_num', ''))
@@ -1612,7 +1690,7 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
             print(f"Load data error: {e}")
     
     def export_pdf(self):
-        """ส่งออก PDF"""
+        """ส่งออก PDF คุณภาพสูงแบบหลายหน้าพร้อมแผนภาพคาน"""
         try:
             if plt is None:
                 QMessageBox.warning(self, "เตือน", "ไม่พบ matplotlib กรุณาติดตั้ง: pip install matplotlib")
@@ -1623,26 +1701,55 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
                 return
                 
             import os
+            from matplotlib.backends.backend_pdf import PdfPages
             
             # เลือกที่ตั้งไฟล์
-            default_name = f"RC_Beam_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+            default_name = f"RC_Beam_Report_Enhanced_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
             file_path, _ = QFileDialog.getSaveFileName(
                 self, "บันทึกรายงาน PDF", default_name, "PDF Files (*.pdf)"
             )
             
             if file_path:
-                # สร้าง figure ใหม่สำหรับ PDF export เพื่อหลีกเลี่ยงปัญหา canvas
-                pdf_fig = self.create_corrected_pdf_report_figure(self.last_results)
+                # สร้าง multi-page PDF
+                with PdfPages(file_path) as pdf:
+                    try:
+                        # หน้าที่ 1: ข้อมูลพื้นฐานและแผนภาพคาน
+                        fig1 = self.create_pdf_page_1(self.last_results, setup_font_for_pdf())
+                        if fig1:
+                            pdf.savefig(fig1, bbox_inches='tight', dpi=300)
+                            plt.close(fig1)
+                        
+                        # หน้าที่ 2: การคำนวณโมเมนต์และแรงเฉือน  
+                        fig2 = self.create_pdf_page_2(self.last_results, setup_font_for_pdf())
+                        if fig2:
+                            pdf.savefig(fig2, bbox_inches='tight', dpi=300)
+                            plt.close(fig2)
+                        
+                        # หน้าที่ 3: ผลการตรวจสอบและสรุป
+                        fig3 = self.create_pdf_page_3(self.last_results, setup_font_for_pdf())
+                        if fig3:
+                            pdf.savefig(fig3, bbox_inches='tight', dpi=300)
+                            plt.close(fig3)
+                        
+                        # เก็บข้อมูล metadata
+                        d = pdf.infodict()
+                        d['Title'] = 'รายงานการคำนวณคาน RC ตามมาตรฐาน ACI 318'
+                        d['Author'] = 'RC Beam Analysis Program'
+                        d['Subject'] = 'การวิเคราะห์และออกแบบคาน RC'
+                        d['Keywords'] = 'RC Beam, ACI 318, Concrete Design'
+                        d['Creator'] = 'RC Beam Analysis Program v.1.0'
+                        d['Producer'] = 'Enhanced PDF Generator'
+                        
+                    except Exception as e:
+                        print(f"Error generating PDF pages: {e}")
+                        # Fallback to single page PDF
+                        pdf_fig = self.create_a4_report_figure(self.last_results)
+                        if pdf_fig:
+                            pdf.savefig(pdf_fig, bbox_inches='tight', dpi=300)
+                            plt.close(pdf_fig)
                 
-                if pdf_fig:
-                    # บันทึก matplotlib figure เป็น PDF
-                    pdf_fig.savefig(file_path, format='pdf', bbox_inches='tight', dpi=300)
-                    plt.close(pdf_fig)  # ปิด figure หลังใช้งาน
-                    
-                    QMessageBox.information(self, "สำเร็จ", f"บันทึกรายงาน PDF เรียบร้อย\n{file_path}")
-                    self.ui.statusbar.showMessage(f"ส่งออก PDF: {os.path.basename(file_path)}", 3000)
-                else:
-                    QMessageBox.warning(self, "เตือน", "ไม่สามารถสร้างรายงาน PDF ได้")
+                QMessageBox.information(self, "สำเร็จ", f"บันทึกรายงาน PDF คุณภาพสูงแบบหลายหน้าเรียบร้อย\n{file_path}")
+                self.ui.statusbar.showMessage(f"ส่งออก Enhanced PDF: {os.path.basename(file_path)}", 3000)
             
         except Exception as e:
             QMessageBox.critical(self, "ข้อผิดพลาด", f"ไม่สามารถส่งออก PDF ได้:\n{str(e)}")
@@ -1782,16 +1889,558 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
             print(f"Error creating PDF report figure: {e}")
             return None
     
-    def create_corrected_pdf_report_figure(self, results):
-        """สร้าง figure ใหม่สำหรับ PDF export พร้อมแก้ไขปัญหาภาษา"""
+    def create_a4_report_figure(self, results):
+        """สร้าง figure สำหรับ PDF รูปแบบ A4 คุณภาพสูงพร้อมแผนภาพคาน"""
         try:
-            # ตั้งค่าฟอนต์ภาษาไทยสำหรับ PDF
-            thai_font = setup_thai_font_for_pdf()
+            # ตั้งค่าฟอนต์ที่รองรับสัญลักษณ์พิเศษสำหรับ PDF
+            font_used = setup_font_for_pdf()
             
-            # สร้าง figure ใหม่
-            fig = plt.figure(figsize=(16, 20))
-            fig.suptitle('รายงานการคำนวณคาน RC แบบละเอียด', fontsize=16, fontweight='bold', 
-                        y=0.98, fontfamily=thai_font)
+            # สร้าง multi-page PDF แยกเป็นหลายหน้า
+            figures = []
+            
+            # หน้าที่ 1: ข้อมูลพื้นฐานและแผนภาพคาน
+            fig1 = self.create_pdf_page_1(results, font_used)
+            if fig1:
+                figures.append(fig1)
+            
+            # หน้าที่ 2: การคำนวณโมเมนต์และแรงเฉือน
+            fig2 = self.create_pdf_page_2(results, font_used)
+            if fig2:
+                figures.append(fig2)
+            
+            # หน้าที่ 3: ผลการตรวจสอบและสรุป
+            fig3 = self.create_pdf_page_3(results, font_used)
+            if fig3:
+                figures.append(fig3)
+            
+            # Return first figure (main function expects single figure)
+            return figures[0] if figures else None
+            
+        except Exception as e:
+            print(f"Error creating A4 report figure: {e}")
+            return None
+    
+    def create_pdf_page_1(self, results, font_used):
+        """สร้างหน้าที่ 1: ข้อมูลพื้นฐานและแผนภาพคาน"""
+        try:
+            # สร้าง figure ขนาด A4 แนวตั้ง
+            fig = plt.figure(figsize=(8.27, 11.69))
+            fig.suptitle('รายงานการคำนวณคาน RC ตามมาตรฐาน ACI 318 - หน้าที่ 1/3', 
+                        fontsize=16, fontweight='bold', y=0.97, fontfamily=font_used)
+            
+            # ปรับ layout ให้เหมาะสมกับ A4 - เพิ่มระยะห่างจากชื่อ
+            plt.subplots_adjust(left=0.08, right=0.92, top=0.90, bottom=0.08, hspace=0.5)
+            
+            # ใช้ค่าที่ถูกต้องโดยไม่ต้องแปลงหน่วย
+            fc_ksc = results['fc']  # ksc
+            fy_ksc = results['fy']  # ksc
+            
+            # 1. ข้อมูลพื้นฐาน (ย้ายลงมาจากชื่อ)
+            ax1 = plt.subplot(3, 1, 1)
+            ax1.axis('off')
+            
+            input_text = f"""ข้อมูลการออกแบบคาน RC:
+            
+ขนาดหน้าตัดคาน:
+• ความกว้าง (B) = {results['B']:.0f} มม.        • ความสูง (D) = {results['D']:.0f} มม.
+• ความลึกมีประสิทธิภาพ (d) = {results['d']:.0f} มม. (คำนวณอัตโนมัติ)
+
+คุณสมบัติวัสดุ:
+• กำลังรับแรงอัดคอนกรีต (f'c) = {fc_ksc:.1f} กก./ตร.ซม.
+• กำลังรับแรงดึงเหล็ก (fy) = {fy_ksc:.0f} กก./ตร.ซม.
+
+เหล็กเสริม:
+• เหล็กรับแรงดึง: {results['main_rebar']} จำนวน {results['main_num']} เส้น (As = {results['As']:.2f} ตร.ซม.)
+• เหล็กรับแรงอัด: {results['comp_rebar']} จำนวน {results['comp_num']} เส้น (A's = {results['Ass']:.2f} ตร.ซม.)
+• เหล็กปลอก: {results['stirrup']} {results['stirrup_type']} ระยะ {results['stirrup_spacing']:.0f} มม. (Av = {results['Av']:.3f} ตร.ซม.)
+
+แรงกระทำ:
+• โมเมนต์ (Mu) = {results['Mu']:.2f} ตัน-เมตร        • แรงเฉือน (Vu) = {results['Vu']:.2f} ตัน"""
+            
+            ax1.text(0.05, 0.95, input_text, transform=ax1.transAxes, fontsize=12,
+                    verticalalignment='top', fontfamily=font_used,
+                    bbox=dict(boxstyle="round,pad=0.4", facecolor="lightblue", alpha=0.7))
+            
+            # 2. แผนภาพหน้าตัดคาน (ขนาดใหญ่และชัดเจน แต่ไม่ซ้อนทับข้อมูล)
+            ax2 = plt.subplot(3, 1, 2)
+            self.draw_detailed_beam_section_for_pdf(ax2, results, font_used)
+            ax2.set_title('แผนภาพหน้าตัดคาน', 
+                         fontsize=14, fontweight='bold', fontfamily=font_used, pad=15)
+            
+            # 3. ข้อมูลเหล็กเสริม (ย้ายมาไว้ใต้แผนภาพ)
+            ax3 = plt.subplot(3, 1, 3)
+            ax3.axis('off')
+            
+            steel_info = f"""ข้อมูลเหล็กเสริมรายละเอียด:
+
+เหล็กรับแรงดึง (Tension Steel):
+• ขนาด: {results['main_rebar']} จำนวน {results['main_num']} เส้น
+• พื้นที่: As = {results['As']:.2f} ตร.ซม.
+• ตำแหน่ง: ด้านล่างของคาน (ระยะ {40} มม. จากขอบ)
+
+เหล็กรับแรงอัด (Compression Steel):
+• ขนาด: {results['comp_rebar']} จำนวน {results['comp_num']} เส้น  
+• พื้นที่: A's = {results['Ass']:.2f} ตร.ซม.
+• ตำแหน่ง: ด้านบนของคาน (ระยะ {40} มม. จากขอบ)
+
+เหล็กปลอก (Stirrups):
+• ขนาด: {results['stirrup']} {results['stirrup_type']}
+• ระยะห่าง: {results['stirrup_spacing']:.0f} มม.
+• พื้นที่: Av = {results['Av']:.3f} ตร.ซม."""
+            
+            ax3.text(0.05, 0.95, steel_info, transform=ax3.transAxes, fontsize=12,
+                    verticalalignment='top', fontfamily=font_used,
+                    bbox=dict(boxstyle="round,pad=0.4", facecolor="lightyellow", alpha=0.7))
+            
+            plt.tight_layout()
+            return fig
+            
+        except Exception as e:
+            print(f"Error creating PDF page 1: {e}")
+            return None
+    
+    def draw_detailed_beam_section_for_pdf(self, ax, results, font_used):
+        """วาดแผนภาพหน้าตัดคานแบบละเอียดสำหรับ PDF"""
+        try:
+            # ข้อมูลมิติ
+            width = results['B']  # mm
+            height = results['D']  # mm
+            d = results['d']  # mm
+            cover = 40  # default cover
+            
+            # แปลงเป็น cm สำหรับการแสดงผล
+            w_cm = width / 10
+            h_cm = height / 10
+            d_cm = d / 10
+            cover_cm = cover / 10
+            
+            # ตั้งค่า axis
+            ax.set_xlim(-5, w_cm + 5)
+            ax.set_ylim(-5, h_cm + 5)
+            ax.set_aspect('equal')
+            
+            # วาดเส้นขอบคาน
+            from matplotlib.patches import Rectangle
+            beam_rect = Rectangle((0, 0), w_cm, h_cm, linewidth=3, 
+                                edgecolor='black', facecolor='lightgray', alpha=0.3)
+            ax.add_patch(beam_rect)
+            
+            # วาดเส้นความลึกมีประสิทธิภาพ
+            ax.axhline(y=h_cm-d_cm, xmin=0.1, xmax=0.9, color='red', 
+                      linewidth=2, linestyle='--', alpha=0.8)
+            
+            # วาดเหล็กรับแรงดึง (main reinforcement)
+            main_num = results['main_num']
+            if main_num > 0:
+                main_dia = 16  # default diameter in mm
+                main_dia_cm = main_dia / 10
+                
+                # คำนวณตำแหน่งเหล็ก
+                spacing = (w_cm - 2 * cover_cm) / (main_num - 1) if main_num > 1 else 0
+                for i in range(main_num):
+                    x_pos = cover_cm + i * spacing
+                    y_pos = cover_cm
+                    
+                    circle = plt.Circle((x_pos, y_pos), main_dia_cm/2, 
+                                      color='blue', alpha=0.8, linewidth=2)
+                    ax.add_patch(circle)
+            
+            # วาดเหล็กรับแรงอัด (compression reinforcement)
+            comp_num = results['comp_num']
+            if comp_num > 0:
+                comp_dia = 13  # default diameter in mm
+                comp_dia_cm = comp_dia / 10
+                
+                # คำนวณตำแหน่งเหล็ก
+                spacing = (w_cm - 2 * cover_cm) / (comp_num - 1) if comp_num > 1 else 0
+                for i in range(comp_num):
+                    x_pos = cover_cm + i * spacing
+                    y_pos = h_cm - cover_cm
+                    
+                    circle = plt.Circle((x_pos, y_pos), comp_dia_cm/2, 
+                                      color='green', alpha=0.8, linewidth=2)
+                    ax.add_patch(circle)
+            
+            # วาดเหล็กปลอก
+            stirrup_spacing = results['stirrup_spacing'] / 10  # convert to cm
+            stirrup_width = w_cm - 2 * cover_cm
+            stirrup_height = h_cm - 2 * cover_cm
+            
+            # วาดเหล็กปลอกตัวอย่าง
+            stirrup_rect = Rectangle((cover_cm, cover_cm), stirrup_width, stirrup_height, 
+                                   linewidth=2, edgecolor='orange', facecolor='none', 
+                                   linestyle='-', alpha=0.7)
+            ax.add_patch(stirrup_rect)
+            
+            # ใส่ขนาดและป้ายกำกับ
+            # ขนาดความกว้าง
+            ax.annotate('', xy=(0, -2), xytext=(w_cm, -2), 
+                       arrowprops=dict(arrowstyle='<->', color='black', lw=1.5))
+            ax.text(w_cm/2, -3, f'b = {width:.0f} มม.', ha='center', va='top', 
+                   fontsize=12, fontweight='bold', fontfamily=font_used)
+            
+            # ขนาดความสูง
+            ax.annotate('', xy=(-2, 0), xytext=(-2, h_cm), 
+                       arrowprops=dict(arrowstyle='<->', color='black', lw=1.5))
+            ax.text(-3, h_cm/2, f'h = {height:.0f} มม.', ha='center', va='center', 
+                   rotation=90, fontsize=12, fontweight='bold', fontfamily=font_used)
+            
+            # ความลึกมีประสิทธิภาพ
+            ax.annotate('', xy=(w_cm + 1, h_cm), xytext=(w_cm + 1, h_cm - d_cm), 
+                       arrowprops=dict(arrowstyle='<->', color='red', lw=2))
+            ax.text(w_cm + 2, h_cm - d_cm/2, f'd = {d:.0f} มม.\n(คำนวณอัตโนมัติ)', 
+                   ha='left', va='center', fontsize=11, fontweight='bold', 
+                   color='red', fontfamily=font_used)
+            
+            # ย้ายข้อมูลเหล็กเสริมไปด้านขวาของแผนภาพแทนการใช้ legend
+            # เพื่อไม่ให้ซ้อนทับแผนภาพคาน
+            info_x = w_cm + 8  # ตำแหน่ง x ด้านขวาของแผนภาพ
+            info_y_start = h_cm  # เริ่มจากด้านบนของแผนภาพ
+            
+            # ข้อมูลเหล็กรับแรงดึง
+            ax.plot(info_x - 1, info_y_start - 5, 'o', color='blue', markersize=8, alpha=0.8)
+            ax.text(info_x, info_y_start - 5, f'เหล็กรับแรงดึง: {results["main_rebar"]} จำนวน {main_num} เส้น', 
+                   ha='left', va='center', fontsize=10, fontfamily=font_used, color='blue')
+            
+            # ข้อมูลเหล็กรับแรงอัด
+            ax.plot(info_x - 1, info_y_start - 8, 'o', color='green', markersize=8, alpha=0.8)
+            ax.text(info_x, info_y_start - 8, f'เหล็กรับแรงอัด: {results["comp_rebar"]} จำนวน {comp_num} เส้น', 
+                   ha='left', va='center', fontsize=10, fontfamily=font_used, color='green')
+            
+            # ข้อมูลเหล็กปลอก
+            ax.plot([info_x - 1.5, info_x - 0.5], [info_y_start - 11, info_y_start - 11], 
+                   color='orange', linewidth=3, alpha=0.7)
+            ax.text(info_x, info_y_start - 11, f'เหล็กปลอก: {results["stirrup"]} ระยะ {stirrup_spacing*10:.0f} มม.', 
+                   ha='left', va='center', fontsize=10, fontfamily=font_used, color='orange')
+            
+            # ข้อมูลความลึกมีประสิทธิภาพ
+            ax.plot([info_x - 1.5, info_x - 0.5], [info_y_start - 14, info_y_start - 14], 
+                   color='red', linewidth=2, linestyle='--', alpha=0.8)
+            ax.text(info_x, info_y_start - 14, f'ความลึกมีประสิทธิภาพ d = {d:.0f} มม.', 
+                   ha='left', va='center', fontsize=10, fontfamily=font_used, color='red')
+            
+            # ปรับขอบเขตของแผนภาพให้เห็นข้อมูลด้านขวา
+            ax.set_xlim(-5, w_cm + 35)  # เพิ่มพื้นที่ด้านขวาให้มากขึ้น
+            
+            # ตั้งชื่อ axes
+            ax.set_xlabel('ระยะทางในแนวกว้าง (ซม.)', fontsize=12, fontfamily=font_used)
+            ax.set_ylabel('ระยะทางในแนวสูง (ซม.)', fontsize=12, fontfamily=font_used)
+            
+            # ใส่ grid
+            ax.grid(True, alpha=0.3, linestyle=':', linewidth=0.5)
+            
+        except Exception as e:
+            print(f"Error drawing beam section: {e}")
+    
+    def create_pdf_page_2(self, results, font_used):
+        """สร้างหน้าที่ 2: การคำนวณโมเมนต์และแรงเฉือน"""
+        try:
+            # สร้าง figure ขนาด A4 แนวตั้ง
+            fig = plt.figure(figsize=(8.27, 11.69))
+            fig.suptitle('รายงานการคำนวณคาน RC ตามมาตรฐาน ACI 318 - หน้าที่ 2/3', 
+                        fontsize=16, fontweight='bold', y=0.96, fontfamily=font_used)
+            
+            # ปรับ layout ให้เหมาะสมกับ A4
+            plt.subplots_adjust(left=0.08, right=0.92, top=0.92, bottom=0.08, hspace=0.5)
+            
+            fc_ksc = results['fc']
+            fy_ksc = results['fy']
+            
+            # 1. การคำนวณโมเมนต์
+            ax1 = plt.subplot(2, 1, 1)
+            ax1.axis('off')
+            
+            moment_calc = f"""การคำนวณโมเมนต์ (ACI 318):
+
+1. พื้นที่เหล็กเสริม:
+   As = {results['As']:.2f} ตร.ซม. (เหล็กรับแรงดึง)     A's = {results['Ass']:.2f} ตร.ซม. (เหล็กรับแรงอัด)
+
+2. ความลึกของแกนกลาง:
+   c = As×fy / (0.85×f'c×b×β₁) = {results['c']:.2f} ซม.     β₁ = {results['beta']:.3f}
+
+3. ค่า strain และ φ:
+   εs = 0.003×(d-c)/c = {results['es']:.6f}     φ = {results['phi']:.3f}
+
+4. กำลังรับโมเมนต์:
+   Cc = 0.85×f'c×a×b = {results['Cc']:.2f} ตัน
+   Mn = As×fy×(d-a/2) + Cs×(d-d') = {results['Mn']:.2f} ตัน-เมตร
+   φMn = {results['phi']:.3f}×{results['Mn']:.2f} = {results['phiMn']:.2f} ตัน-เมตร"""
+            
+            ax1.text(0.05, 0.95, moment_calc, transform=ax1.transAxes, fontsize=12,
+                    verticalalignment='top', fontfamily=font_used,
+                    bbox=dict(boxstyle="round,pad=0.4", facecolor="lightyellow", alpha=0.7))
+            
+            # 2. การคำนวณแรงเฉือน
+            ax2 = plt.subplot(2, 1, 2)
+            ax2.axis('off')
+            
+            shear_calc = f"""การคำนวณแรงเฉือน (ACI 318):
+
+1. พื้นที่เหล็กปลอก:
+   Av = {results['Av']:.3f} ตร.ซม.
+
+2. กำลังรับแรงเฉือนของคอนกรีต:
+   Vc = 0.53√f'c × b × d = 0.53√{fc_ksc:.1f} × {results['B']:.0f} × {results['d']:.0f} = {results['Vc']:.2f} ตัน
+
+3. กำลังรับแรงเฉือนของเหล็กปลอก:
+   Vs = Av×fy×d / s = {results['Av']:.3f}×{fy_ksc:.0f}×{results['d']:.0f}/{results['stirrup_spacing']:.0f}
+
+4. กำลังรับแรงเฉือนรวม:
+   φVn = φ(Vc + Vs) = {results['phiVn']:.2f} ตัน
+
+5. ระยะห่างเหล็กปลอกสูงสุด (ตาม ACI 9.7.6.2.2):
+   ระยะห่างที่กรอก: s = {results['stirrup_spacing']:.0f} มม.
+   ระยะห่างสูงสุดที่อนุญาต (มีสองเงื่อนไข):
+   - s_max1 = {results['s_max1']} มม. (ตามมาตรฐาน)
+   - s_max2 = d/2 = {results['s_max2']} มม. (ความลึกมีประสิทธิภาพ)
+   การตรวจสอบ: {'[OK] เหมาะสม' if results['spacing_adequate'] else '[NG] ไม่เหมาะสม'}
+   หมายเหตุ: การคำนวณตาม ACI 318 Table 9.7.6.2.2"""
+            
+            ax2.text(0.05, 0.95, shear_calc, transform=ax2.transAxes, fontsize=12,
+                    verticalalignment='top', fontfamily=font_used,
+                    bbox=dict(boxstyle="round,pad=0.4", facecolor="lightgreen", alpha=0.7))
+            
+            plt.tight_layout()
+            return fig
+            
+        except Exception as e:
+            print(f"Error creating PDF page 2: {e}")
+            return None
+    
+    def create_pdf_page_3(self, results, font_used):
+        """สร้างหน้าที่ 3: ผลการตรวจสอบความปลอดภัยและสรุป"""
+        try:
+            # สร้าง figure ขนาด A4 แนวตั้ง
+            fig = plt.figure(figsize=(8.27, 11.69))
+            fig.suptitle('รายงานการคำนวณคาน RC ตามมาตรฐาน ACI 318 - หน้าที่ 3/3', 
+                        fontsize=16, fontweight='bold', y=0.96, fontfamily=font_used)
+            
+            # ปรับ layout ให้เหมาะสมกับ A4
+            plt.subplots_adjust(left=0.08, right=0.92, top=0.92, bottom=0.08, hspace=0.4)
+            
+            # 1. ผลการตรวจสอบความปลอดภัย (ใช้สัญลักษณ์ที่แสดงได้ใน PDF)
+            ax1 = plt.subplot(3, 1, 1)
+            ax1.axis('off')
+            
+            # แก้ไขสัญลักษณ์ให้แสดงผลได้ใน PDF
+            moment_check = "ปลอดภัย" if results['moment_adequate'] else "ไม่ปลอดภัย"
+            shear_check = "ปลอดภัย" if results['shear_adequate'] else "ไม่ปลอดภัย"
+            moment_symbol = "[OK]" if results['moment_adequate'] else "[NG]"
+            shear_symbol = "[OK]" if results['shear_adequate'] else "[NG]"
+            overall_status = "การออกแบบเหมาะสมและปลอดภัย!" if results['moment_adequate'] and results['shear_adequate'] else "การออกแบบต้องปรับปรุง!"
+            overall_color = "lightgreen" if results['moment_adequate'] and results['shear_adequate'] else "lightcoral"
+            
+            check_results = f"""ผลการตรวจสอบความปลอดภัย:
+
+โมเมนต์:
+   φMn = {results['phiMn']:.2f} ตัน-ม {'≥' if results['moment_adequate'] else '<'} Mu = {results['Mu']:.2f} ตัน-ม
+   {moment_symbol} {moment_check}     อัตราส่วนความปลอดภัย = {results['moment_ratio']:.2f}
+
+แรงเฉือน:
+   φVn = {results['phiVn']:.2f} ตัน {'≥' if results['shear_adequate'] else '<'} Vu = {results['Vu']:.2f} ตัน
+   {shear_symbol} {shear_check}     อัตราส่วนความปลอดภัย = {results['shear_ratio']:.2f}
+
+สรุปผลรวม:
+{overall_status}"""
+            
+            ax1.text(0.05, 0.95, check_results, transform=ax1.transAxes, fontsize=14,
+                    verticalalignment='top', fontfamily=font_used, weight='bold',
+                    bbox=dict(boxstyle="round,pad=0.4", facecolor=overall_color, alpha=0.7))
+            
+            # 2. ตารางสรุปผล
+            ax2 = plt.subplot(3, 1, 2)
+            ax2.axis('off')
+            
+            # สร้างตารางแสดงผล
+            table_data = [
+                ['รายการตรวจสอบ', 'ค่าออกแบบ', 'ค่าที่กระทำ', 'อัตราส่วน', 'ผลการตรวจสอบ'],
+                ['โมเมนต์', f'{results["phiMn"]:.2f} ตัน-ม', f'{results["Mu"]:.2f} ตัน-ม', 
+                 f'{results["moment_ratio"]:.2f}', f'{moment_symbol} {moment_check}'],
+                ['แรงเฉือน', f'{results["phiVn"]:.2f} ตัน', f'{results["Vu"]:.2f} ตัน', 
+                 f'{results["shear_ratio"]:.2f}', f'{shear_symbol} {shear_check}']
+            ]
+            
+            # วาดตาราง
+            table = ax2.table(cellText=table_data[1:], colLabels=table_data[0], 
+                             cellLoc='center', loc='center', 
+                             colWidths=[0.25, 0.2, 0.2, 0.15, 0.2])
+            table.auto_set_font_size(False)
+            table.set_fontsize(11)
+            table.scale(1, 2)
+            
+            # จัดสีตาราง
+            for i in range(len(table_data[0])):
+                table[(0, i)].set_facecolor('#34495e')
+                table[(0, i)].set_text_props(weight='bold', color='white')
+            
+            for i in range(1, len(table_data)):
+                color = '#d4edda' if (i == 1 and results['moment_adequate']) or (i == 2 and results['shear_adequate']) else '#f8d7da'
+                for j in range(len(table_data[0])):
+                    table[(i, j)].set_facecolor(color)
+            
+            # 3. หมายเหตุและข้อมูลเพิ่มเติม (ย้ายมาจากหน้าแรก)
+            ax3 = plt.subplot(3, 1, 3)
+            ax3.axis('off')
+            
+            final_notes = f"""หมายเหตุและข้อมูลเพิ่มเติม:
+
+📋 การคำนวณและมาตรฐาน:
+• การคำนวณตามมาตรฐาน ACI 318-19 สำหรับคาน RC
+• ระบบหน่วย: กิโลกรัม-ตัน-มิลลิเมตร (kg-ton-mm)
+• หน่วยที่ใช้: ความยาว (มม., ซม.), แรง (ตัน), โมเมนต์ (ตัน-ม), ความเค้น (กก./ตร.ซม.)
+
+🔤 สัญลักษณ์และความหมาย:
+• εs = ค่าการเปลี่ยนรูปในเหล็กรับแรงดึง (strain)
+• φ = ตัวคูณลดกำลัง (strength reduction factor) = 0.9 สำหรับโมเมนต์, 0.75 สำหรับแรงเฉือน
+• ρ = อัตราส่วนเหล็กเสริม (reinforcement ratio)
+• [OK] = ✅ ปลอดภัย, [NG] = ❌ ไม่ปลอดภัย
+
+📐 การคำนวณความลึกมีประสิทธิภาพ:
+• d = D - ระยะหุ้ม - ขนาดเหล็กปลอก - ขนาดเหล็กหลัก/2
+• ระยะหุ้มมาตรฐาน = 40 มม. (สำหรับสภาพแวดล้อมปกติ)
+
+⚠️ ข้อแนะนำและข้อควรระวัง:
+• หากผลการตรวจสอบแสดง [NG] แนะนำให้ปรับปรุงการออกแบบ
+• ตรวจสอบความเหมาะสมของขนาดหน้าตัดและปริมาณเหล็กเสริม
+• พิจารณาเงื่อนไขการบริการ (serviceability) เพิ่มเติม
+
+📅 ข้อมูลรายงาน:
+วันที่สร้างรายงาน: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+สร้างโดย: RC Beam Analysis Program v.1.0 - Enhanced Edition
+เวอร์ชัน: ACI 318-19 Compliance"""
+            
+            ax3.text(0.05, 0.95, final_notes, transform=ax3.transAxes, fontsize=10,
+                    verticalalignment='top', fontfamily=font_used, style='italic',
+                    bbox=dict(boxstyle="round,pad=0.5", facecolor="lightyellow", alpha=0.8))
+            
+            plt.tight_layout()
+            return fig
+            
+        except Exception as e:
+            print(f"Error creating PDF page 3: {e}")
+            return None
+            
+            ax1.text(0.05, 0.95, input_text, transform=ax1.transAxes, fontsize=11,
+                    verticalalignment='top', fontfamily=font_used,
+                    bbox=dict(boxstyle="round,pad=0.4", facecolor="lightblue", alpha=0.7))
+            
+            # 2. การคำนวณโมเมนต์
+            ax2 = plt.subplot(5, 1, 2)
+            ax2.axis('off')
+            
+            moment_calc = f"""การคำนวณโมเมนต์ (ACI 318):
+
+1. พื้นที่เหล็กเสริม:
+   As = {results['As']:.2f} ตร.ซม. (เหล็กรับแรงดึง)     A's = {results['Ass']:.2f} ตร.ซม. (เหล็กรับแรงอัด)
+
+2. ความลึกของแกนกลาง:
+   c = As×fy / (0.85×f'c×b×β₁) = {results['c']:.2f} ซม.     β₁ = {results['beta']:.3f}
+
+3. ค่า strain และ φ:
+   εs = 0.003×(d-c)/c = {results['es']:.6f}     φ = {results['phi']:.3f}
+
+4. กำลังรับโมเมนต์:
+   Cc = 0.85×f'c×a×b = {results['Cc']:.2f} ตัน
+   Mn = As×fy×(d-a/2) + Cs×(d-d') = {results['Mn']:.2f} ตัน-เมตร
+   φMn = {results['phi']:.3f}×{results['Mn']:.2f} = {results['phiMn']:.2f} ตัน-เมตร"""
+            
+            ax2.text(0.05, 0.95, moment_calc, transform=ax2.transAxes, fontsize=11,
+                    verticalalignment='top', fontfamily=font_used,
+                    bbox=dict(boxstyle="round,pad=0.4", facecolor="lightyellow", alpha=0.7))
+            
+            # 3. การคำนวณแรงเฉือน
+            ax3 = plt.subplot(5, 1, 3)
+            ax3.axis('off')
+            
+            shear_calc = f"""การคำนวณแรงเฉือน (ACI 318):
+
+1. พื้นที่เหล็กปลอก:
+   Av = {results['Av']:.3f} ตร.ซม.
+
+2. กำลังรับแรงเฉือนของคอนกรีต:
+   Vc = 0.53√f'c × b × d = 0.53√{fc_ksc:.1f} × {results['B']:.0f} × {results['d']:.0f} = {results['Vc']:.2f} ตัน
+
+3. กำลังรับแรงเฉือนของเหล็กปลอก:
+   Vs = Av×fy×d / s = {results['Av']:.3f}×{fy_ksc:.0f}×{results['d']:.0f}/{results['stirrup_spacing']:.0f}
+
+4. กำลังรับแรงเฉือนรวม:
+   φVn = φ(Vc + Vs) = {results['phiVn']:.2f} ตัน
+
+5. ระยะห่างเหล็กปลอกสูงสุด (ตาม ACI 9.7.6.2.2):
+   s = {results['stirrup_spacing']:.0f} มม. (ที่กรอก)
+   ระยะห่างสูงสุดที่อนุญาต (มีสองเงื่อนไข):
+   - s_max1 = {results['s_max1']} มม. (ตามมาตรฐาน)
+   - s_max2 = d/2 = {results['s_max2']} มม. (ความลึกมีประสิทธิภาพ)
+   การตรวจสอบ: {'✓ เหมาะสม' if results['spacing_adequate'] else '✗ ไม่เหมาะสม'}
+   หมายเหตุ: การคำนวณตาม ACI 318 Table 9.7.6.2.2"""
+            
+            ax3.text(0.05, 0.95, shear_calc, transform=ax3.transAxes, fontsize=11,
+                    verticalalignment='top', fontfamily=font_used,
+                    bbox=dict(boxstyle="round,pad=0.4", facecolor="lightgreen", alpha=0.7))
+            
+            # 4. ผลการตรวจสอบความปลอดภัย
+            ax4 = plt.subplot(5, 1, 4)
+            ax4.axis('off')
+            
+            moment_status = "✅ ปลอดภัย" if results['moment_adequate'] else "❌ ไม่ปลอดภัย"
+            shear_status = "✅ ปลอดภัย" if results['shear_adequate'] else "❌ ไม่ปลอดภัย"
+            overall_color = "lightgreen" if results['moment_adequate'] and results['shear_adequate'] else "lightcoral"
+            
+            check_results = f"""ผลการตรวจสอบความปลอดภัย:
+
+โมเมนต์:
+   φMn = {results['phiMn']:.2f} ตัน-ม {'≥' if results['moment_adequate'] else '<'} Mu = {results['Mu']:.2f} ตัน-ม
+   {moment_status}     อัตราส่วนความปลอดภัย = {results['moment_ratio']:.2f}
+
+แรงเฉือน:
+   φVn = {results['phiVn']:.2f} ตัน {'≥' if results['shear_adequate'] else '<'} Vu = {results['Vu']:.2f} ตัน
+   {shear_status}     อัตราส่วนความปลอดภัย = {results['shear_ratio']:.2f}
+
+สรุปผล:
+{'✅ การออกแบบเหมาะสมและปลอดภัย!' if results['moment_adequate'] and results['shear_adequate'] else '⚠️ การออกแบบต้องปรับปรุง!'}"""
+            
+            ax4.text(0.05, 0.95, check_results, transform=ax4.transAxes, fontsize=12,
+                    verticalalignment='top', fontfamily=font_used, weight='bold',
+                    bbox=dict(boxstyle="round,pad=0.4", facecolor=overall_color, alpha=0.7))
+            
+            # 5. หมายเหตุและข้อมูลเพิ่มเติม
+            ax5 = plt.subplot(5, 1, 5)
+            ax5.axis('off')
+            
+            notes = f"""หมายเหตุและข้อมูลเพิ่มเติม:
+
+• การคำนวณตามมาตรฐาน ACI 318
+• หน่วยที่ใช้: ความยาว (มม., ซม.), แรง (ตัน), โมเมนต์ (ตัน-ม), ความเค้น (กก./ตร.ซม.)
+• εs = ค่าการเปลี่ยนรูปในเหล็กรับแรงดึง, φ = ตัวคูณลดกำลัง (strength reduction factor)
+• ความลึกมีประสิทธิภาพ (d) คำนวณอัตโนมัติจาก: d = D - ระยะหุ้ม - ขนาดเหล็กปลอก - ขนาดเหล็กหลัก/2
+
+วันที่สร้างรายงาน: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+สร้างโดย: RC Beam Analysis Program"""
+            
+            ax5.text(0.05, 0.95, notes, transform=ax5.transAxes, fontsize=10,
+                    verticalalignment='top', fontfamily=font_used, style='italic',
+                    bbox=dict(boxstyle="round,pad=0.4", facecolor="lightgray", alpha=0.5))
+            
+            plt.tight_layout()
+            return fig
+            
+        except Exception as e:
+            print(f"Error creating A4 report figure: {e}")
+            return None
+    
+    def create_corrected_pdf_report_figure(self, results):
+        """สร้าง figure ใหม่สำหรับ PDF export พร้อมแก้ไขปัญหาภาษา - เวอร์ชันปรับปรุงใหม่"""
+        try:
+            # ตั้งค่าฟอนต์ที่รองรับสัญลักษณ์พิเศษสำหรับ PDF
+            font_used = setup_font_for_pdf()
+            
+            # สร้าง figure ใหม่ขนาด A4 แนวตั้ง
+            fig = plt.figure(figsize=(8.27, 11.69))  # A4 size in inches
+            fig.suptitle('รายงานการคำนวณคาน RC แบบละเอียด', fontsize=14, fontweight='bold', 
+                        y=0.97, fontfamily=font_used)
+            
+            # ปรับ layout ให้เหมาะสมกับ A4
+            plt.subplots_adjust(left=0.08, right=0.92, top=0.94, bottom=0.06, hspace=0.3, wspace=0.2)
             
             # 1. ข้อมูลนำเข้า (subplot 1)
             ax1 = plt.subplot(6, 2, (1, 2))
@@ -1822,7 +2471,7 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
             • แรงเฉือน (Vu) = {results['Vu']:.2f} ตัน"""
             
             ax1.text(0.05, 0.95, input_text, transform=ax1.transAxes, fontsize=11,
-                    verticalalignment='top', fontfamily=thai_font,
+                    verticalalignment='top', fontfamily=font_used,
                     bbox=dict(boxstyle="round,pad=0.3", facecolor="lightblue", alpha=0.5))
             
             # 2. แผนภาพหน้าตัดคาน (subplot 2)
@@ -1855,7 +2504,7 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
                φMn = {results['phiMn']:.2f} ตัน-เมตร"""
             
             ax3.text(0.05, 0.95, moment_calc, transform=ax3.transAxes, fontsize=10,
-                    verticalalignment='top', fontfamily=thai_font,
+                    verticalalignment='top', fontfamily=font_used,
                     bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow", alpha=0.5))
             
             # 4. การคำนวณแรงเฉือน (subplot 4)
@@ -1881,7 +2530,7 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
                s_max = min(d/2, 600) = {results['s_max']} มม."""
             
             ax4.text(0.05, 0.95, shear_calc, transform=ax4.transAxes, fontsize=10,
-                    verticalalignment='top', fontfamily=thai_font,
+                    verticalalignment='top', fontfamily=font_used,
                     bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgreen", alpha=0.5))
             
             # 5. ผลลัพธ์การตรวจสอบ (subplot 5)
@@ -1903,12 +2552,10 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
                {'✓ เหมาะสม' if results['spacing_adequate'] else '✗ ไม่เหมาะสม'}"""
             
             ax5.text(0.05, 0.95, check_results, transform=ax5.transAxes, fontsize=11,
-                    verticalalignment='top', fontfamily=thai_font,
+                    verticalalignment='top', fontfamily=font_used,
                     bbox=dict(boxstyle="round,pad=0.3", facecolor="lightcyan", alpha=0.5))
             
-            # 6. แผนภาพแรงโมเมนต์-ความโค้ง (subplot 6) 
-            ax6 = plt.subplot(6, 2, (11, 12))
-            self.draw_moment_curvature_diagram(ax6, results)
+            # ไม่แสดงแผนภาพ - ตามที่ผู้ใช้ร้องขอ
             
             plt.tight_layout()
             plt.subplots_adjust(top=0.95)
@@ -1923,12 +2570,12 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
         """สร้าง figure ใหม่สำหรับ PDF export พร้อมแก้ไขปัญหาภาษา"""
         try:
             # ตั้งค่าฟอนต์ภาษาไทยสำหรับ PDF
-            thai_font = setup_thai_font_for_pdf()
+            font_used = setup_font_used_for_pdf()
             
             # สร้าง figure ใหม่
             fig = plt.figure(figsize=(16, 20))
             fig.suptitle('รายงานการคำนวณคาน RC แบบละเอียด', fontsize=16, fontweight='bold', 
-                        y=0.98, fontfamily=thai_font)
+                        y=0.98, fontfamily=font_used)
             
             # 1. ข้อมูลนำเข้า (subplot 1)
             ax1 = plt.subplot(6, 2, (1, 2))
@@ -1959,7 +2606,7 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
             • แรงเฉือน (Vu) = {results['Vu']:.2f} ตัน"""
             
             ax1.text(0.05, 0.95, input_text, transform=ax1.transAxes, fontsize=11,
-                    verticalalignment='top', fontfamily=thai_font,
+                    verticalalignment='top', fontfamily=font_used,
                     bbox=dict(boxstyle="round,pad=0.3", facecolor="lightblue", alpha=0.5))
             
             # 2. แผนภาพหน้าตัดคาน (subplot 2)
@@ -2014,8 +2661,13 @@ class ImprovedRCBeamCalculator(QtWidgets.QMainWindow):
             4. กำลังรับแรงเฉือนรวม:
                φVn = φ(Vc + Vs) = {results['phiVn']:.2f} tf
             
-            5. ระยะห่างเหล็กปลอกสูงสุด:
-               s_max = min(d/2, 600) = {results['s_max']} มม."""
+            5. ระยะห่างเหล็กปลอกสูงสุด (ตาม ACI 9.7.6.2.2):
+               s = {results['stirrup_spacing']:.0f} มม. (ที่กรอก)
+               ระยะห่างสูงสุดที่อนุญาต (มีสองเงื่อนไข):
+               - s_max1 = {results['s_max1']} มม. (ตามมาตรฐาน)
+               - s_max2 = d/2 = {results['s_max2']} มม. (ความลึกมีประสิทธิภาพ)
+               การตรวจสอบ: {'✓ เหมาะสม' if results['spacing_adequate'] else '✗ ไม่เหมาะสม'}
+               หมายเหตุ: การคำนวณตาม ACI 318 Table 9.7.6.2.2"""
             
             ax4.text(0.05, 0.95, shear_calc, transform=ax4.transAxes, fontsize=9,
                     verticalalignment='top', fontfamily='monospace',
@@ -2120,3 +2772,123 @@ if __name__ == "__main__":
         print(f"เกิดข้อผิดพลาด: {e}")
         import traceback
         traceback.print_exc()
+
+# Additional methods for enhanced PDF generation
+def draw_detailed_beam_section_for_pdf(ax, results, font_used):
+    """วาดแผนภาพหน้าตัดคานแบบละเอียดสำหรับ PDF"""
+    try:
+        # ข้อมูลมิติ
+        width = results['B']  # mm
+        height = results['D']  # mm
+        d = results['d']  # mm
+        cover = 40  # default cover
+        
+        # แปลงเป็น cm สำหรับการแสดงผล
+        w_cm = width / 10
+        h_cm = height / 10
+        d_cm = d / 10
+        cover_cm = cover / 10
+        
+        # ตั้งค่า axis
+        ax.set_xlim(-5, w_cm + 5)
+        ax.set_ylim(-5, h_cm + 5)
+        ax.set_aspect('equal')
+        
+        # วาดเส้นขอบคาน
+        from matplotlib.patches import Rectangle
+        beam_rect = Rectangle((0, 0), w_cm, h_cm, linewidth=3, 
+                            edgecolor='black', facecolor='lightgray', alpha=0.3)
+        ax.add_patch(beam_rect)
+        
+        # วาดเส้นความลึกมีประสิทธิภาพ
+        ax.axhline(y=h_cm-d_cm, xmin=0.1, xmax=0.9, color='red', 
+                  linewidth=2, linestyle='--', alpha=0.8)
+        
+        # วาดเหล็กรับแรงดึง (main reinforcement)
+        main_num = results['main_num']
+        if main_num > 0:
+            main_dia = 16  # default diameter in mm
+            main_dia_cm = main_dia / 10
+            
+            # คำนวณตำแหน่งเหล็ก
+            spacing = (w_cm - 2 * cover_cm) / (main_num - 1) if main_num > 1 else 0
+            for i in range(main_num):
+                x_pos = cover_cm + i * spacing
+                y_pos = cover_cm
+                
+                circle = plt.Circle((x_pos, y_pos), main_dia_cm/2, 
+                                  color='blue', alpha=0.8, linewidth=2)
+                ax.add_patch(circle)
+        
+        # วาดเหล็กรับแรงอัด (compression reinforcement)
+        comp_num = results['comp_num']
+        if comp_num > 0:
+            comp_dia = 13  # default diameter in mm
+            comp_dia_cm = comp_dia / 10
+            
+            # คำนวณตำแหน่งเหล็ก
+            spacing = (w_cm - 2 * cover_cm) / (comp_num - 1) if comp_num > 1 else 0
+            for i in range(comp_num):
+                x_pos = cover_cm + i * spacing
+                y_pos = h_cm - cover_cm
+                
+                circle = plt.Circle((x_pos, y_pos), comp_dia_cm/2, 
+                                  color='green', alpha=0.8, linewidth=2)
+                ax.add_patch(circle)
+        
+        # วาดเหล็กปลอก
+        stirrup_spacing = results['stirrup_spacing'] / 10  # convert to cm
+        stirrup_width = w_cm - 2 * cover_cm
+        stirrup_height = h_cm - 2 * cover_cm
+        
+        # วาดเหล็กปลอกตัวอย่าง
+        stirrup_rect = Rectangle((cover_cm, cover_cm), stirrup_width, stirrup_height, 
+                               linewidth=2, edgecolor='orange', facecolor='none', 
+                               linestyle='-', alpha=0.7)
+        ax.add_patch(stirrup_rect)
+        
+        # ใส่ขนาดและป้ายกำกับ
+        # ขนาดความกว้าง
+        ax.annotate('', xy=(0, -2), xytext=(w_cm, -2), 
+                   arrowprops=dict(arrowstyle='<->', color='black', lw=1.5))
+        ax.text(w_cm/2, -3, f'b = {width:.0f} มม.', ha='center', va='top', 
+               fontsize=12, fontweight='bold', fontfamily=font_used)
+        
+        # ขนาดความสูง
+        ax.annotate('', xy=(-2, 0), xytext=(-2, h_cm), 
+                   arrowprops=dict(arrowstyle='<->', color='black', lw=1.5))
+        ax.text(-3, h_cm/2, f'h = {height:.0f} มม.', ha='center', va='center', 
+               rotation=90, fontsize=12, fontweight='bold', fontfamily=font_used)
+        
+        # ความลึกมีประสิทธิภาพ
+        ax.annotate('', xy=(w_cm + 1, h_cm), xytext=(w_cm + 1, h_cm - d_cm), 
+                   arrowprops=dict(arrowstyle='<->', color='red', lw=2))
+        ax.text(w_cm + 2, h_cm - d_cm/2, f'd = {d:.0f} มม.\n(คำนวณอัตโนมัติ)', 
+               ha='left', va='center', fontsize=11, fontweight='bold', 
+               color='red', fontfamily=font_used)
+        
+        # คำอธิบาย
+        legend_elements = [
+            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='blue', 
+                      markersize=10, label=f'เหล็กรับแรงดึง: {results["main_rebar"]} จำนวน {main_num} เส้น'),
+            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='green', 
+                      markersize=10, label=f'เหล็กรับแรงอัด: {results["comp_rebar"]} จำนวน {comp_num} เส้น'),
+            plt.Line2D([0], [0], color='orange', linewidth=3, 
+                      label=f'เหล็กปลอก: {results["stirrup"]} ระยะ {stirrup_spacing*10:.0f} มม.'),
+            plt.Line2D([0], [0], color='red', linewidth=2, linestyle='--', 
+                      label=f'ความลึกมีประสิทธิภาพ d = {d:.0f} มม.')
+        ]
+        
+        ax.legend(handles=legend_elements, loc='upper right', 
+                 fontsize=10, fontfamily=font_used, framealpha=0.9)
+        
+        # ตั้งชื่อ axes
+        ax.set_xlabel('ระยะทางในแนวกว้าง (ซม.)', fontsize=12, fontfamily=font_used)
+        ax.set_ylabel('ระยะทางในแนวสูง (ซม.)', fontsize=12, fontfamily=font_used)
+        
+        # ใส่ grid
+        ax.grid(True, alpha=0.3, linestyle=':', linewidth=0.5)
+        
+    except Exception as e:
+        print(f"Error drawing beam section: {e}")
+

@@ -28,11 +28,13 @@ class ModernLineEdit(QtWidgets.QLineEdit):
                 background-color: #ffffff;
                 border: 2px solid #e0e6ed;
                 border-radius: 8px;
-                padding: 12px 16px;
-                font-size: 14px;
+                padding: 16px 20px;  /* เพิ่ม padding เพื่อให้ช่องกรอกใหญ่ขึ้น */
+                font-size: 16px;      /* เพิ่มขนาดฟอนต์ */
                 font-family: 'Segoe UI', Arial, sans-serif;
                 color: #2c3e50;
                 selection-background-color: #3498db;
+                min-height: 25px;     /* กำหนดความสูงขั้นต่ำ */
+                min-width: 300px;     /* เพิ่มความกว้างขั้นต่ำให้มากขึ้นอีก */
             }
             QLineEdit:focus {
                 border-color: #3498db;
@@ -264,7 +266,11 @@ class Ui_RcRecBeamCalImproved(object):
     
     def setupUi(self, RCRecbeamCal):
         RCRecbeamCal.setObjectName("RCRecbeamCalImproved")
-        RCRecbeamCal.resize(1400, 900)  # เพิ่มขนาดหน้าต่างเพื่อไม่ให้ต้องเลื่อนซ้ายขวา
+        RCRecbeamCal.resize(2000, 1200)  # เพิ่มขนาดให้ใหญ่ขึ้นอีก
+        RCRecbeamCal.setMinimumSize(1800, 1100)  # เพิ่มขนาดขั้นต่ำ
+        
+        # Set window title and ensure standard window controls
+        RCRecbeamCal.setWindowTitle("โปรแกรมออกแบบคานคอนกรีตเสริมเหล็ก - Rectangular Beam Design")
         
         # Set modern window style
         RCRecbeamCal.setStyleSheet("""
@@ -277,15 +283,15 @@ class Ui_RcRecBeamCalImproved(object):
         self.centralwidget = QtWidgets.QWidget(RCRecbeamCal)
         self.centralwidget.setObjectName("centralwidget")
         
-        # Create main layout with proper spacing
+        # Create main layout with better spacing and proportions
         main_layout = QtWidgets.QHBoxLayout(self.centralwidget)
-        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setContentsMargins(10, 10, 10, 10)  # ลด margins เพื่อให้มีพื้นที่มากขึ้น
         main_layout.setSpacing(20)
         
-        # Left panel - Input controls
+        # Left panel - Input controls (ลด proportion)
         self.setup_input_panel(main_layout)
         
-        # Right panel - Output and visualization
+        # Right panel - Output and visualization (เพิ่ม proportion)
         self.setup_output_panel(main_layout)
         
         RCRecbeamCal.setCentralWidget(self.centralwidget)
@@ -300,22 +306,31 @@ class Ui_RcRecBeamCalImproved(object):
         QtCore.QMetaObject.connectSlotsByName(RCRecbeamCal)
     
     def setup_input_panel(self, main_layout):
-        """Setup the left input panel with modern design"""
-        # Create scroll area for inputs
+        """Setup the left input panel with improved design and better visibility"""
+        # Create scroll area for inputs with better proportions
         scroll_area = QtWidgets.QScrollArea()
         scroll_area.setWidgetResizable(True)
-        scroll_area.setMaximumWidth(480)  # เพิ่มความกว้างจาก 400 เป็น 480
-        scroll_area.setMinimumWidth(450)  # กำหนดความกว้างขั้นต่ำ
+        scroll_area.setMaximumWidth(750)  # ขยายความกว้างให้มากขึ้นอีก
+        scroll_area.setMinimumWidth(700)  # เพิ่มความกว้างขั้นต่ำ
+        scroll_area.setMinimumHeight(900)  # กำหนดความสูงขั้นต่ำเพื่อให้เห็นปุ่มครบ
+        # กำหนดให้เลื่อนได้แค่แนวตั้งเท่านั้น
+        scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         scroll_area.setStyleSheet("""
             QScrollArea {
-                border: none;
-                background-color: transparent;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                background-color: #ffffff;
+            }
+            QScrollArea > QWidget > QWidget {
+                background-color: #ffffff;
             }
         """)
         
         input_widget = QtWidgets.QWidget()
         input_layout = QtWidgets.QVBoxLayout(input_widget)
-        input_layout.setSpacing(15)  # ลดระยะห่างจาก 20 เป็น 15
+        input_layout.setSpacing(20)  # ลดระยะห่างเล็กน้อยเพื่อประหยัดพื้นที่
+        input_layout.setContentsMargins(20, 20, 20, 20)  # ลด margins เล็กน้อย
         
         # Section 1: Beam Dimensions
         self.setup_dimensions_section(input_layout)
@@ -332,24 +347,26 @@ class Ui_RcRecBeamCalImproved(object):
         # Section 4: Action Buttons
         self.setup_action_buttons(input_layout)
         
-        # Add stretch to push everything to the top
-        input_layout.addStretch()
+        # ลบ addStretch() เพื่อไม่ให้ปุ่มถูกดันไปไกล
         
         scroll_area.setWidget(input_widget)
-        main_layout.addWidget(scroll_area)
+        main_layout.addWidget(scroll_area, 0)  # ลดให้ไม่ยืดตาม weight
     
     def setup_dimensions_section(self, parent_layout):
-        """Setup beam dimensions input section"""
+        """Setup beam dimensions input section with improved visibility"""
         dimensions_group = ModernGroupBox("ข้อมูลมิติคาน")
         layout = QtWidgets.QFormLayout()
-        layout.setSpacing(12)  # ลดระยะห่างจาก 15 เป็น 12
+        layout.setSpacing(16)  # เพิ่มระยะห่าง
         layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.setFormAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+        layout.setLabelAlignment(QtCore.Qt.AlignLeft)
         
         # Beam width
         self.label_width = ModernLabel("ความกว้างคาน B (มม.)")
         self.width = ModernLineEdit()
         self.width.setPlaceholderText("เช่น 300")
         self.width.setText("300")
+        self.width.setMinimumWidth(280)  # เพิ่มความกว้างขั้นต่ำ
         layout.addRow(self.label_width, self.width)
         
         # Beam depth
@@ -357,37 +374,57 @@ class Ui_RcRecBeamCalImproved(object):
         self.depth = ModernLineEdit()
         self.depth.setPlaceholderText("เช่น 500")
         self.depth.setText("500")
+        self.depth.setMinimumWidth(280)
         layout.addRow(self.label_depth, self.depth)
         
-        # Effective depth
-        self.label_d = ModernLabel("ความลึกมีประสิทธิภาพ d (มม.)")
-        self.d = ModernLineEdit()
-        self.d.setPlaceholderText("เช่น 450")
-        self.d.setText("450")
-        layout.addRow(self.label_d, self.d)
+        # Effective depth - ไม่ต้องกรอก จะคำนวณอัตโนมัติ
+        self.label_d = ModernLabel("ความลึกมีประสิทธิภาพ d (มม.) - คำนวณอัตโนมัติ")
+        self.d_display = ModernLabel("จะคำนวณจากความสูง - ระยะหุ้ม - ขนาดเหล็ก")
+        self.d_display.setStyleSheet("""
+            QLabel {
+                color: #27ae60;
+                font-size: 15px;
+                font-weight: 600;
+                font-style: italic;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                background-color: #f8f9fa;
+                border: 2px solid #27ae60;
+                border-radius: 8px;
+                padding: 14px 18px;
+                min-height: 20px;
+                min-width: 280px;  /* เพิ่มความกว้างให้สอดคล้องกับช่องอื่น */
+            }
+        """)
+        layout.addRow(self.label_d, self.d_display)
         
         # Clear cover
-        self.label_cover = ModernLabel("คลีนเนสอิน (มม.)")
+        self.label_cover = ModernLabel("ระยะหุ้ม (มม.)")
         self.cover = ModernLineEdit()
         self.cover.setPlaceholderText("เช่น 40")
         self.cover.setText("40")
+        self.cover.setMinimumWidth(280)
         layout.addRow(self.label_cover, self.cover)
+        
+        # ลบความยาวคานออก - ตามที่ผู้ใช้ร้องขอ
         
         dimensions_group.setLayout(layout)
         parent_layout.addWidget(dimensions_group)
     
     def setup_materials_section(self, parent_layout):
-        """Setup material properties input section"""
+        """Setup material properties input section with improved visibility"""
         materials_group = ModernGroupBox("คุณสมบัติวัสดุ")
         layout = QtWidgets.QFormLayout()
-        layout.setSpacing(12)  # ลดระยะห่างจาก 15 เป็น 12
+        layout.setSpacing(16)  # เพิ่มระยะห่าง
         layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.setFormAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+        layout.setLabelAlignment(QtCore.Qt.AlignLeft)
         
         # Concrete strength
         self.label_fc = ModernLabel("กำลังรับแรงอัดคอนกรีต f'c (ksc)")
         self.fc = ModernLineEdit()
         self.fc.setPlaceholderText("เช่น 245")
         self.fc.setText("245.00")
+        self.fc.setMinimumWidth(220)
         layout.addRow(self.label_fc, self.fc)
         
         # Steel strength
@@ -395,6 +432,7 @@ class Ui_RcRecBeamCalImproved(object):
         self.fy = ModernLineEdit()
         self.fy.setPlaceholderText("เช่น 4000")
         self.fy.setText("4000.00")
+        self.fy.setMinimumWidth(220)
         layout.addRow(self.label_fy, self.fy)
         
         materials_group.setLayout(layout)
@@ -422,7 +460,7 @@ class Ui_RcRecBeamCalImproved(object):
                 border-radius: 6px;
                 padding: 8px 12px;
                 font-size: 14px;
-                min-width: 100px;
+                min-width: 120px;
             }
             QComboBox:focus {
                 border-color: #3498db;
@@ -432,11 +470,16 @@ class Ui_RcRecBeamCalImproved(object):
         self.main_rebar_num = ModernLineEdit()
         self.main_rebar_num.setPlaceholderText("จำนวน")
         self.main_rebar_num.setText("4")
-        self.main_rebar_num.setMaximumWidth(80)
+        self.main_rebar_num.setMinimumWidth(100)
+        self.main_rebar_num.setMaximumWidth(120)
         
-        main_rebar_layout.addWidget(self.main_rebar_size, 2)
-        main_rebar_layout.addWidget(QtWidgets.QLabel("x"), 0)
-        main_rebar_layout.addWidget(self.main_rebar_num, 1)
+        label_x = QtWidgets.QLabel("x")
+        label_x.setAlignment(QtCore.Qt.AlignCenter)
+        label_x.setMinimumWidth(20)
+        
+        main_rebar_layout.addWidget(self.main_rebar_size, 3)
+        main_rebar_layout.addWidget(label_x, 0)
+        main_rebar_layout.addWidget(self.main_rebar_num, 2)
         layout.addRow(self.label_main_rebar, main_rebar_layout)
         
         # Compression reinforcement
@@ -452,11 +495,16 @@ class Ui_RcRecBeamCalImproved(object):
         self.comp_rebar_num = ModernLineEdit()
         self.comp_rebar_num.setPlaceholderText("จำนวน")
         self.comp_rebar_num.setText("2")
-        self.comp_rebar_num.setMaximumWidth(80)
+        self.comp_rebar_num.setMinimumWidth(100)
+        self.comp_rebar_num.setMaximumWidth(120)
         
-        comp_rebar_layout.addWidget(self.comp_rebar_size, 2)
-        comp_rebar_layout.addWidget(QtWidgets.QLabel("x"), 0)
-        comp_rebar_layout.addWidget(self.comp_rebar_num, 1)
+        label_x2 = QtWidgets.QLabel("x")
+        label_x2.setAlignment(QtCore.Qt.AlignCenter)
+        label_x2.setMinimumWidth(20)
+        
+        comp_rebar_layout.addWidget(self.comp_rebar_size, 3)
+        comp_rebar_layout.addWidget(label_x2, 0)
+        comp_rebar_layout.addWidget(self.comp_rebar_num, 2)
         layout.addRow(self.label_comp_rebar, comp_rebar_layout)
         
         # Stirrup details
@@ -514,33 +562,51 @@ class Ui_RcRecBeamCalImproved(object):
         parent_layout.addWidget(loading_group)
     
     def setup_action_buttons(self, parent_layout):
-        """Setup action buttons"""
+        """Setup action buttons with better spacing and visibility"""
         buttons_group = ModernGroupBox("การดำเนินการ")
+        buttons_group.setMinimumHeight(280)  # กำหนดความสูงขั้นต่ำให้มากขึ้น
         layout = QtWidgets.QVBoxLayout()
-        layout.setSpacing(12)
+        layout.setSpacing(12)  # เพิ่มระยะห่างระหว่างปุ่ม
+        layout.setContentsMargins(15, 15, 15, 15)
         
-        # Calculate button
-        self.btn_calculate = ModernButton("คำนวณ", "primary")
+        # Calculate button (ปุ่มหลัก - ขนาดใหญ่)
+        self.btn_calculate = ModernButton("🧮 คำนวณ", "primary")
         self.btn_calculate.setIcon(QtGui.QIcon(":/icons/calculator.png"))
+        self.btn_calculate.setMinimumHeight(55)  # เพิ่มความสูงของปุ่มหลัก
+        self.btn_calculate.setStyleSheet(self.btn_calculate.styleSheet() + "font-size: 16px; font-weight: bold;")
         layout.addWidget(self.btn_calculate)
         
+        # สร้าง horizontal layout สำหรับปุ่มรอง
+        row1_layout = QtWidgets.QHBoxLayout()
+        row1_layout.setSpacing(8)
+        
         # Clear button
-        self.btn_clear = ModernButton("ล้างข้อมูล", "secondary")
+        self.btn_clear = ModernButton("🗑️ ล้างข้อมูล", "secondary")
         self.btn_clear.setIcon(QtGui.QIcon(":/icons/clear.png"))
-        layout.addWidget(self.btn_clear)
+        self.btn_clear.setMinimumHeight(48)
+        self.btn_clear.setMinimumWidth(180)  # กำหนดความกว้างขั้นต่ำ
+        row1_layout.addWidget(self.btn_clear)
         
         # Export PDF button
-        self.btn_export_pdf = ModernButton("ส่งออก PDF", "info")
+        self.btn_export_pdf = ModernButton("📄 ส่งออก", "info")
         self.btn_export_pdf.setIcon(QtGui.QIcon(":/icons/pdf.png"))
-        layout.addWidget(self.btn_export_pdf)
+        self.btn_export_pdf.setMinimumHeight(48)
+        self.btn_export_pdf.setMinimumWidth(180)  # กำหนดความกว้างขั้นต่ำ
+        self.btn_export_pdf.setToolTip("ส่งออกรายงาน PDF")  # เพิ่ม tooltip
+        row1_layout.addWidget(self.btn_export_pdf)
+        
+        layout.addLayout(row1_layout)
         
         # Save data button
-        self.btn_save = ModernButton("บันทึกข้อมูล", "success")
+        self.btn_save = ModernButton("💾 บันทึกข้อมูล", "success")
         self.btn_save.setIcon(QtGui.QIcon(":/icons/save.png"))
+        self.btn_save.setMinimumHeight(48)
         layout.addWidget(self.btn_save)
         
         buttons_group.setLayout(layout)
         parent_layout.addWidget(buttons_group)
+        
+        # ลบ spacer เพื่อให้ปุ่มอยู่ติดกัน ไม่มีพื้นที่ว่างมาก
     
     def setup_output_panel(self, main_layout):
         """Setup the right output panel"""
@@ -720,10 +786,10 @@ class ModernInputValidator:
                 return False, "ความสูงคานควรมากกว่า 300 มม."
                 
             if c < 20:
-                return False, "คลีนเนสอินควรมากกว่า 20 มม."
+                return False, "ระยะหุ้มควรมากกว่า 20 มม."
                 
             if c > h/4:
-                return False, "คลีนเนสอินมากเกินไป"
+                return False, "ระยะหุ้มมากเกินไป"
                 
             expected_d = h - c
             if abs(effective_d - expected_d) > c:
